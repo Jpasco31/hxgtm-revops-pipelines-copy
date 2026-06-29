@@ -1,0 +1,29 @@
+---
+title: "Creating a User Library"
+---
+
+To create a new User Library:
+
+1. Log in to the Developer Dashboard (see [Developer Dashboard](/platform/developer/model-development-process/developer-portal) for details)
+
+2. Select 'Libraries' from the left menu. Here you will see a list of existing libraries.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_overview.png").default}
+  width="1000"
+/>
+
+3. Press the 'Create Library' button and fill in the details of the new user library
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_create_new.png").default}
+  width="600"
+/>
+
+The Package Name field must adhere to the following constraints:
+
+- Alphanumeric characters starting with a letter;
+- May contain underscores;
+- Must not be a Python or Javascript keyword (e.g. `if`, `elif`, `false`,
+   etc). The full list can be found <a href="https://docs.python.org/3.9/reference/lexical_analysis.html#keywords" target="_blank">**here for Python**</a>
+   and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#keywords" target="_blank">**here for Javascript**</a>.

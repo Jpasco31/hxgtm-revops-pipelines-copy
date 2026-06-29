@@ -1,0 +1,64 @@
+{
+  "factors": {
+    "formulaCount": {
+      "weight": 0.25,
+      "thresholds": {
+        "small": 2000,
+        "medium": 10000,
+        "large": 50000
+      }
+    },
+    "worksheetCount": {
+      "weight": 0.15,
+      "thresholds": {
+        "small": 5,
+        "medium": 15,
+        "large": 30
+      }
+    },
+    "fileSize": {
+      "weight": 0.08,
+      "thresholds": {
+        "small": 2,
+        "medium": 10,
+        "large": 50
+      }
+    },
+    "namedRanges": {
+      "weight": 0.08,
+      "thresholds": {
+        "small": 50,
+        "medium": 500,
+        "large": 2000
+      }
+    },
+    "volatileFunctions": {
+      "weight": 0.08,
+      "thresholds": {
+        "small": 10,
+        "medium": 100,
+        "large": 500
+      }
+    },
+    "vbaComplexity": {
+      "weight": 0.15,
+      "thresholds": {
+        "small": 1,
+        "medium": 2,
+        "large": 3
+      }
+    },
+    "dependencyDepth": {
+      "weight": 0.21,
+      "thresholds": {
+        "small": 5,
+        "medium": 15,
+        "large": 30
+      }
+    }
+  },
+  "confidenceFactors": {
+    "errorCellThreshold": 100,
+    "maxUncertainties": 2
+  }
+}

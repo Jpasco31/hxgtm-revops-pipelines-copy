@@ -1,0 +1,87 @@
+---
+title: "Parameter Tables in User Libraries"
+---
+
+### Introduction
+
+hx Renew supports the creation of User Libraries. These allow developers to write code once within the User Library and import it into many models. This process improves the consistency and maintainability of code.
+
+User Libraries are currently supported on the `algorithms`, `data_schema`, and `view` folders. They are not supported on the `parameter_tables` folder directly. 
+Parameter tables in User Libraries are currently supported via the below process and in the meantime we will continue to develop our strategic approach to centralised data sources.
+
+This demonstration will involve creating a User Library from scratch. It is also possible to add the functionality to existing User Libraries. 
+In addition, the pattern demonstrated here can be used for handling parameter tables within stand-alone models.
+
+_Note: It is not recommended to load very large parameter tables using the process described below. Doing so may affect model performance._
+
+### Setup
+
+The starter code can be downloaded [here.](../../assets/parameter_tables_in_user_libraries.zip) All code snippets shown below are contained within this download.
+
+Create a User Library in the Developer portal, and add the starter code. For this demonstration example, the package name is set to `parameter_tables_in_ul` (UL = User Libraries).
+
+
+### Explanation and Usage
+
+The parameter table(s) are placed in `libraries/parameter_tables_ul/algorithms/parameter_tables`. Note the location inside of the algorithms folder of the library, meaning it is available for export.
+Also in here is a file called `__init__.py`, which should not be modified.
+
+User Libraries can include regular model files, allowing developers to test library code and replicate the building of models in one place. Here we can test the import of the library code.
+
+In `algorithms` there is a file called `parameter_tables_schema.py`. This Python file replicates the `parameter_tables_schema.json` file for User Library parameter tables, as shown below.
+
+_Note: In the code snippet below, change the path in the import and in the `ParameterTable.from_csv` function to match the name of your own library_
+
+```python
+from libraries.parameter_tables_in_ul.algorithms.parameter_tables import ParameterTable
+
+rates = ParameterTable.from_csv("libraries/parameter_tables_in_ul/algorithms/parameter_tables/rates.csv", schema={
+    "name": "str",
+    "value": "float",
+})
+
+```
+
+New variables can be added for each subsequent parameter table. These variables can be imported into other Algorithms or Data Schema files and will behave as regular parameter tables, as shown below.
+
+#### Algorithms
+
+```python
+import hx
+# Import the file holding the User Library parameter tables
+from algorithms import parameter_tables_schema as params
+
+@hx.rating
+def rating_algorithm(hxd):
+
+    # Reading parameter table into rating
+    # Usage of a parameter table such as this is described in detail elsewhere in our documentation and online
+    rates_tbl = params.rates.df()
+
+```
+
+#### Data Schema
+```python
+import hx_data_schema as hx
+# Import the file holding the User Library parameter tables
+from algorithms import parameter_tables_schema as params
+
+
+@hx.data_schema
+def data_schema():
+
+    return hx.Structure(
+        children={
+            # Use these parameter tables as normal to create dropdowns or linked dropdowns
+            "names": hx.Str(mode="input", default=None, optionality="optional", options=params.rates.column("name"), view={"label": "Names"}),
+            "linked": hx.Structure(
+                linked_options=params.rates.columns("name", "value"),
+                children={
+                    "name": hx.Str(mode="input", default=None, optionality="optional", view={"label": "Name"}),
+                    "value": hx.Float(mode="input", default=None, optionality="optional", view={"label": "Value"}),
+                },
+            ),
+        },
+    )
+
+```

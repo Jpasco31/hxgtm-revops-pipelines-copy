@@ -1,0 +1,258 @@
+<!--
+  webinar-promo-card scaffold — 1 speaker
+  Flex row of two equal 520px columns inside 60px padding (40px gutter). Left
+  column is a flex column distributed via space-between: logo (top), the
+  meta/headline/subtitle stack (middle, 20px gaps), name + company (bottom).
+  Right column is the headshot tile (520x507, 8px radius) filling its column.
+  Reference: 1-speaker Figma export shared in plan.
+  Placeholders:
+    {{FONT_FACE_BLOCK}}           — paste contents of
+                                    skills/design-system/tokens/fonts-inline-card.css
+                                    (Acid Grotesk Light/Book/Medium + JetBrains Mono)
+    {{LOGO_SVG}}                  — paste contents of
+                                    skills/design-system/assets/logo/hx-wordmark.svg
+    {{GRADIENT_IMG_PATH}}         — absolute path to PNG in
+                                    skills/webinar-promo-card/assets/
+                                    (Burgundy 01.png | Dark blue 01.png | Deep Forest 01.png)
+    {{HEADLINE}}                  — sentence-case, <=8 words ideally
+    {{SUBTITLE}}                  — optional one-line descriptor
+                                    (or remove the .subtitle node entirely)
+    {{META}}                      — e.g. May 21, 2026, 3pm ET / 8pm GMT
+    {{SPEAKER_1_NAME}}            — full name
+    {{SPEAKER_1_ROLE}}            — Title, Company
+    {{SPEAKER_1_PHOTO_NODE}}      — <img src="headshots/...png" alt=""> OR empty string
+    {{GRADIENT_BASE}}             — #3F0A20 / #1C2733 / #002625
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Webinar promo card — {{HEADLINE}}</title>
+<style>
+  {{FONT_FACE_BLOCK}}
+
+  :root {
+    --font: 'FFF Acid Grotesk', Arial, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --gradient-base: {{GRADIENT_BASE}};
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0a;
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    box-sizing: border-box;
+  }
+
+  .card {
+    position: relative;
+    width: 1200px;
+    height: 627px;
+    overflow: hidden;
+    border-radius: 4px;
+    color: #fff;
+    isolation: isolate;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .bg-base {
+    position: absolute; inset: 0;
+    z-index: 0;
+    background: var(--gradient-base);
+  }
+  .bg-base .gradient-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .bg-grain {
+    position: absolute; inset: 0;
+    opacity: 0.18;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    z-index: 1;
+  }
+
+  .bg-vignette {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.30) 100%);
+    z-index: 2;
+  }
+
+  .content {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    padding: 60px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 40px;
+  }
+
+  .left {
+    flex: 0 0 520px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    color: #FFFFFF;
+  }
+  .logo svg {
+    height: 30px;
+    width: auto;
+    display: block;
+  }
+
+  .text {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .meta {
+    color: #C6C7C8;
+    font-family: var(--mono);
+    font-weight: 300;
+    font-size: 20px;
+    font-style: normal;
+    line-height: 1.1;
+    letter-spacing: 0;
+    margin: 0;
+  }
+
+  h1.headline {
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 48px;
+    font-style: normal;
+    line-height: 1.1;
+    margin: 0;
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 32px;
+    font-style: normal;
+    line-height: 1.1;
+    color: #C6C7C8;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .speaker-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .speaker-info .name {
+    font-family: var(--font);
+    font-weight: 350;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 1.1;
+    color: #fff;
+    margin: 0;
+  }
+  .speaker-info .role {
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 20px;
+    line-height: 1.1;
+    color: #B5B6B8;
+    margin: 0;
+  }
+
+  .portrait {
+    flex: 0 0 520px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--gradient-base);
+    align-self: stretch;
+  }
+  .portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="bg-base"><img class="gradient-img" src="{{GRADIENT_IMG_PATH}}" aria-hidden="true"></div>
+    <div class="bg-grain"></div>
+    <div class="bg-vignette"></div>
+
+    <div class="content">
+      <div class="left">
+        <div class="logo">{{LOGO_SVG}}</div>
+
+        <div class="text">
+          <div class="meta">{{META}}</div>
+          <h1 class="headline">{{HEADLINE}}</h1>
+          <p class="subtitle">{{SUBTITLE}}</p>
+        </div>
+
+        <div class="speaker-info">
+          <p class="name">{{SPEAKER_1_NAME}}</p>
+          <p class="role">{{SPEAKER_1_ROLE}}</p>
+        </div>
+      </div>
+
+      <div class="portrait">{{SPEAKER_1_PHOTO_NODE}}</div>
+    </div>
+  </div>
+  <script>
+    (function autofit() {
+      const fit = (el, min, max, step, maxLines) => {
+        if (!el) return;
+        let size = max;
+        el.style.fontSize = size + 'px';
+        const lineHeight = () => parseFloat(getComputedStyle(el).lineHeight);
+        while (
+          (el.scrollWidth > el.clientWidth ||
+            Math.round(el.scrollHeight / lineHeight()) > maxLines) &&
+          size > min
+        ) {
+          size -= step;
+          el.style.fontSize = size + 'px';
+        }
+      };
+      const run = () => {
+        fit(document.querySelector('h1.headline'), 28, 48, 2, 2);
+        fit(document.querySelector('.subtitle'), 20, 32, 1, 2);
+      };
+      // Script sits at end of body, so DOM is parsed. Run immediately,
+      // then re-run after web fonts load so width measurements use the
+      // final font metrics (and complete before puppeteer's
+      // `document.fonts.ready` await resolves).
+      run();
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(run);
+      }
+    })();
+  </script>
+</body>
+</html>

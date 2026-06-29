@@ -1,0 +1,21 @@
+---
+title: "User Libraries"
+---
+
+## Overview
+
+As your codebase increases in size, the need for a logical ordering and organisation of your file structure becomes more important. Within Renew, Developers can manage their own Python Packages and modular UI components from within the Developer Portal. We refer to these as User Libraries.
+
+Python Packages are collections of Python files that help attain a level of organisation within a directory structure. Python files can be defined in two ways, scripts and modules, dependent on how they are used by the user. Scripts are files ran as top-level scripts, whilst modules contain functions, classes and variables designed to be imported from elsewhere in the codebase.
+
+Modular UI components allow users to compose HX components into larger structures that can be easily shared across several models. This way, changes in common view templates can be propagated across multiple lines of business in a consistent and elegant manner.
+
+## User Library Constraints
+
+There are several constraints placed upon user defined User Libraries that it is important to be aware of:
+
+1. Imported libraries are `read-only` inside your Model or User Library version.
+2. Imported libraries can have their own dependencies including other User Libraries and Python packages, and these will be imported to your Model or User Library too to ensure compatibility.
+3. Library names and their respective package names must be unique.
+4. Only live User Library versions are available for import.
+5. UI components must be composed of HX components, or HX Custom UI Components only. 

@@ -1,0 +1,147 @@
+---
+title: "Dynamic dropdowns"
+---
+
+This chapter will demonstrate how to add a dynamic dropdown - a dropdown where the options are driven based on an output list.
+
+In this example, the options in the regions dropdown will dynamically update based on the country selected as shown in the animation below.
+
+<img src={require("../assets/dynamic_dropdowns.gif").default} width="800" />
+
+---
+
+## :floppy_disk: Model Files
+
+| The model files required for this chapter can be downloaded [here](../assets/day_2_dynamic_dropdowns.zip). |
+| ---------------------------------------------------------------------------------------------------------- |
+
+---
+
+## Objectives
+
+- Import a new parameter table and create new output lists in the data schema
+- Add new example data that is appropriate for the updated data schema
+- Update the rating algorithm to update the displayed list of regions based on the country that has been selected
+
+---
+
+## Parameter tables
+
+- Import the `regions` parameter table from the .zip folder provided on the [introduction](introduction) page.
+
+- This parameter table will be used to generate the dynamic dropdown and contains a list of countries, regions and adjustment values.
+
+- Update the `parameter_tables_schema.json` file.
+
+---
+
+## Data Schema
+
+- Rename the `territory` structure to now be called `region`, remember to update the structure's label.
+- Next, update the `value` child of region to point to `regions_dropdown` for the dropdown options:
+  - `options_data="../../region_dropdown" options_field="region" optionality="optional" default=None`
+- Create a new output List called `region_dropdown`, with one child `region` which will be an output String.
+- Create a new output List called `country_dropdown`, with one child, `country` which will be an output String.
+- Create a new String node `country` with dynamic dropdown options:
+  - `options_data="../country_dropdown" options_field="country" optionality="optional" default=None`
+
+<details>
+<summary>Click to view the solution</summary>
+
+```python
+"region": hx.Structure(view={"label": "Region"}, children={
+    "value": hx.Str(mode="input", default=None, options_data="../../region_dropdown", options_field="region", optionality="optional",view={"label": "Value"}),
+    "adjustment": hx.Float(mode="output", view={"label": "Adjustment", "format":{"output": "percent", "mantissa":2}}),
+    "comment": hx.Str(mode="input", default="", view={"label": "Comment"}),
+    }),
+
+"region_dropdown" : hx.List(mode="output", children={
+    "region" :hx.Str(mode="output", view={"label": "Region"})
+    }),
+
+"country_dropdown": hx.List(mode="output", children={
+    "country":hx.Str(mode="output", view={"label": "Country"})
+    }),
+
+"country" : hx.Str(mode="input", options_data="../country_dropdown", options_field="country", optionality="optional", default=None, view={"label" : "Country"}),
+```
+
+</details>
+
+---
+
+## Example Data
+
+- Update `example_data.json` to include an example that is appropriate for the new data schema. Remove the `territory` node:
+
+```json
+[{...,
+    "country": "United Kingdom",
+    "region": {
+      "value": "London",
+      "adjustment": 0.0,
+      "comment": ""
+    },
+  ...
+}]
+```
+
+---
+
+## View
+
+- Add a new collection called **"Country"** above your Adjustments table, this only needs one field, **"country"**.
+- Change **"territory"** to **"region"** in the Adjustment table data prop.
+
+---
+
+## Rating
+
+- First, read in the new regions parameter table
+- Set `hxd.country_dropdown` to the unique list of countries in the regions parameter table, using set().
+  > **Note:** remember to sort the list, using sorted(), to ensure your code remains deterministic. Set will return an unordered result.
+- Filter the parameter table for the regions associated with the users selected country. Assign the result to the `region_dropdown` list.
+- Next, an IF Statement is needed to ensure that a valid region is selected, meaning that the code so far should be:
+
+```python
+    region_table = hx.params.regions
+    hxd.country_dropdown = sorted(set(region_table["country"]))
+    filtered_regions = region_table[region_table["country"] == hxd.country]
+    hxd.region_dropdown = filtered_regions["region"]
+
+    if hxd.region.value in filtered_regions.values:
+        hxd.region.adjustment = filtered_regions[filtered_regions["region"] == hxd.region.value]["adjustment"].iloc[0]
+    else:
+        hxd.region.adjustment = 0
+        hx.errors.validation("Please select a valid region")
+```
+
+- When calculating the total adjustment (`hxd.total_adjustments`), `hxd.territory.adjustment` needs to be changed to `hxd.region.adjustment`.
+
+```python
+hxd.total_adjustments = (1+hxd.region.adjustment)*(1+hxd.loss_history.adjustment)*(1+hxd.exposure.adjustment)-1
+```
+
+- Remove the two lines associated with Territory Adjustment.
+
+At this point you should have the ability to filter by country and then by region using a dynamic dropdown:
+
+<img src={require("../assets/dynamic_dropdowns.gif").default} width="800" />
+
+---
+
+## Feedback
+
+We would really appreciate any feedback that you have about this chapter. All feedback is anonymous, however if you would like us to contact you, please include your e-mail address.
+
+<iframe
+  src="https://aqj5uz28dk1.typeform.com/to/azDr9qPS"
+  width="100%"
+  height="450px"
+></iframe>
+
+---
+
+## Next steps
+
+The next chapter will demonstrate how to import data from an external source using an API.

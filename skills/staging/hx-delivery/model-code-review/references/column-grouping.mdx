@@ -1,0 +1,76 @@
+---
+title: "Column grouping"
+---
+
+## Overview
+
+In hx Renew, we can group columns together in tables, with the grouped column name appearing above the columns. Grouped columns can be collapsed and expanded together. They can be a good way of limiting the amount of data shown in a table at any one time and they can enhance the data readability.
+
+---
+
+## :floppy_disk: Model Files
+
+| The model files required for this chapter can be downloaded [here](../assets/day_2_column_grouping.zip). |
+| -------------------------------------------------------------------------------------------------- |
+
+---
+
+## Objectives
+
+- Add a view property called group to data schema items
+- Make information presentation more efficient
+
+---
+
+## Updating the data schema
+
+The only modification to the code is required in the data schema file.
+We can set group names in the data schema, by adding an extra view property `group`. Data items with the same group name that are placed next to each other in a table will be grouped together.
+
+An example of what this will look like is below:
+<img src={require("../assets/column_grouping.gif").default} width="800" />
+
+Let's add a `group` to our first table "Layers to Price". The first 5 columns in layers list are added to the group.
+Then add a `group` “Layers Premium Calculations” to the remaining columns in the layers list.
+These changes are done in the view properties as shown below. For more information please see [View properties](/platform/developer/building-your-model/define-your-data/view-properties).
+
+
+```python
+@hx.data_schema
+def data_schema():
+    return hx.Structure(children={
+	...,
+        "layers": hx.List(mode="input", children={
+            "name": hx.Str(mode="input", default="", view={"label": "Name", "group": "Layers to Price"}),
+            "limit": hx.Float(mode="input", default=0, view={"label": "Limit", "group": "Layers to Price", "format":{"thousandSeparated":True, "mantissa":0}}),
+            "excess": hx.Float(mode="input", default=0, view={"label": "Excess","group": "Layers to Price", "format":{"thousandSeparated":True, "mantissa":0}}),
+            "deductible": hx.Float(mode="input", default=0, view={"label": "Deductible", "group": "Layers to Price","format":{"thousandSeparated":True, "mantissa":0}}),
+            "comment": hx.Str(mode="input", default="", view={"label": "Comment", "group": "Layers to Price"}),
+            "ilf": hx.Float(mode="output",  view={"label": "ILF", "group": "Layers Premium Calculations"}),
+            "ded_credit": hx.Float(mode="output",  view={"label": "Ded Credit", "format":{"output":"percent", "mantissa":1}, "group": "Layers Premium Calculations"}),
+            "calculated_prem": hx.Float(mode="output", view={"label": "Calculated Prem", "format":{"thousandSeparated":True, "mantissa":0}, "group": "Layers Premium Calculations"}),
+            "charged_prem": hx.Float(mode="input", default=0, view={"label": "Charged Prem", "format":{"thousandSeparated":True, "mantissa":0}, "group": "Layers Premium Calculations"}),
+            "ulr": hx.Float(mode="output", view={"label": "ULR", "format":{"output":"percent", "mantissa":1}, "group": "Layers Premium Calculations"}),
+            "selected": hx.Bool(mode="input", default=0, view={"label": "Selected", "group": "Layers Premium Calculations"}),
+        }),
+... the rest of your Data Schema
+})
+```
+
+---
+
+## Feedback
+
+We would really appreciate any feedback that you have about this chapter. All feedback is anonymous, however if you would like us to contact you, please include your e-mail address.
+
+<iframe
+  src="https://aqj5uz28dk1.typeform.com/to/HiBHTNrc"
+  width="100%"
+  height="450px"
+></iframe>
+
+---
+
+## Next steps
+
+This chapter completes the Day 2 training, on the next page you will find a version of the completed model files should they be needed.

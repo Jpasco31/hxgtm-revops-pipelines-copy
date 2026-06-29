@@ -1,0 +1,112 @@
+---
+title: "Selectors"
+---
+
+This exercise shows how to display nested lists in hx Renew, using selectors.
+
+Selectors are a very clear visual way of showing the interaction between two related measures - in this case contribution for a liability exposure per layer. Using a selector makes it clear where there is a one-to-many relationship.
+
+An example of what this will look like is below:
+
+<img src={require("../assets/splits_by_exposure.gif").default} width="800" />
+
+The [Developer Documentation](/platform/developer/building-your-model/interface/ui-components/core/selector) contains comprehensive information about the use of Selectors.
+
+---
+
+## :floppy_disk: Model Files
+
+| The model files required for this chapter can be downloaded [here](../assets/day_2_selectors.zip). |
+| -------------------------------------------------------------------------------------------------- |
+
+---
+
+## Objectives
+
+- Add a new output list the data schema
+- Create a new section in the view to display the nested list
+- Update the rating algorithm to populate the new list
+
+---
+
+## Updating the data schema
+
+In the data schema, create an output list `industry_layers` within your `industries` list. **"Layers"** should have two children `name` and `premium`, both outputs.
+
+<details>
+
+<summary>Click to see the solution for the data schema </summary>
+
+```python
+ "industries": hx.List(mode="input", children={
+            # only showing additional elements
+            "industry_layers": hx.List(mode="output", children={
+                "name": hx.Str(mode="output", view={"label": "Name"}),
+                "premium": hx.Float(mode="output", view={"label": "Premium", "format": {"mantissa": 0, "thousandSeparated": True}}),
+            }),
+        })
+```
+
+</details>
+
+---
+
+## Updating the view
+
+In the view, create a new section called **“Premium Splits by Exposure”** and a selector displaying the `industry_trade_name`, followed by a table containing your `industry_layer` data.
+
+<details>
+
+<summary>Click to view the solution for the view</summary>
+
+```javascript
+<HX.Section title="Premium Splits by Exposure">
+  <HX.Selector data={["industries"]} dropdown="industry_trade_name">
+    <HX.Pane>
+      <HX.Table data={["industry_layers"]} fields={["name", "premium"]} />
+    </HX.Pane>
+  </HX.Selector>
+</HX.Section>
+```
+
+</details>
+
+---
+
+## Updating the rating algorithm
+
+In `rating.py`, loop through exposures and the original layers list, creating a temp dict of the `name` and `premium` and append it to the new layers list, within the exposure list. Only append if the layer is selected.
+
+```python
+# Add layers to industry
+for industry in hxd.industries:
+    for layer in hxd.layers:
+        if layer.selected:
+
+            # Create dict
+            temp_dict = {}
+            temp_dict["name"] = layer.name
+
+            # Layer premium is allocated down based on industry allocation
+            temp_dict["premium"] = layer.calculated_prem * industry.allocation
+
+            industry.industry_layers.append(temp_dict)
+```
+
+---
+
+## Feedback
+
+We would really appreciate any feedback that you have about this chapter. All feedback is anonymous, however if you would like us to contact you, please include your e-mail address.
+
+<iframe
+  src="https://aqj5uz28dk1.typeform.com/to/NKQ0x2zB"
+  width="100%"
+  height="450px"
+></iframe>
+
+---
+
+## Next steps
+
+The next chapter will demonstrate how to collapse and expand a table.

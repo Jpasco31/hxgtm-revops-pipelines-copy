@@ -1,0 +1,14 @@
+{
+  "slots": {
+    "center":     { "width": 1080, "height": 600 },
+    "left":       { "width": 886,  "height": 630 },
+    "white-left": { "width": 720,  "height": 520 }
+  },
+  "keys": {
+    "portfolio": {
+      "source": "_source/portfolio.png",
+      "focal": [0.5, 0.4],
+      "description": "hyperexponential portfolio dashboard: KPI cards (charged premium, technical premium, rate adequacy) over a technical premium distribution histogram and rate adequacy scatter chart"
+    }
+  }
+}

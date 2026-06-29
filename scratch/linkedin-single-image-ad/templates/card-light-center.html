@@ -1,0 +1,154 @@
+<!--
+  linkedin-single-image-ad scaffold - light center aligned (Figma 1482-45853)
+  Cream background, centered ~76px dark headline, full-bleed dashboard mockup at
+  bottom. No CTA pill on this variant - the post copy carries the call to action.
+  Placeholders:
+    FONT_FACE_BLOCK        - paste contents of
+                             .claude/skills/design-system/tokens/fonts-inline-card.css
+                             (3 base64-inlined @font-face rules)
+    {{HEADLINE}}           - sentence-case, brand-approved language
+    {{SUBTITLE}}           - optional one-line descriptor (or remove the .subtitle node)
+    {{HERO_IMAGE_NODE}}    - <img src="hero/portfolio--center.png" alt=""> for the
+                             pre-cropped 1080x600 asset, OR empty string to render
+                             without a hero image
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LinkedIn single image ad - {{HEADLINE}}</title>
+<style>
+  {{FONT_FACE_BLOCK}}
+
+  :root {
+    --font: 'FFF Acid Grotesk', Arial, sans-serif;
+    --bg: #F5F5F5;
+    --fg-strong: #16212E;
+    --fg-muted: #848D9A;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0a;
+    font-family: var(--font);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    box-sizing: border-box;
+  }
+
+  .card {
+    position: relative;
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--fg-strong);
+    isolation: isolate;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .bg-base {
+    position: absolute; inset: 0;
+    background: var(--bg);
+    z-index: 0;
+  }
+
+  .hero {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1080px;
+    height: 600px;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+  }
+
+  .content {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    padding: 60px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 96px;
+  }
+
+  .logo {
+    color: var(--fg-strong);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .logo svg {
+    height: 45px;
+    display: block;
+  }
+
+  .text {
+    width: 100%;
+    text-align: center;
+    max-width: 960px;
+  }
+
+  h1.headline {
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 76px;
+    font-style: normal;
+    line-height: 1.1;
+    margin: 0;
+    color: var(--fg-strong);
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 28px;
+    font-style: normal;
+    line-height: 1.25;
+    color: var(--fg-muted);
+    margin: 24px 0 0;
+    text-wrap: balance;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="bg-base"></div>
+
+    <div class="hero">{{HERO_IMAGE_NODE}}</div>
+
+    <div class="content">
+      <div class="logo">
+        <svg viewBox="0 0 2600 320" xmlns="http://www.w3.org/2000/svg" aria-label="hyperexponential">
+          <g transform="translate(0,40) scale(1.18)" fill="currentColor">
+            <path d="M97.74 187.033 L97.74 0 L75.501 0 C75.501 44.925 42.049 71.879 0 76.647 L0 100.851 C31.583 96.817 71.203 89.666 71.203 49.142 L75.688 49.142 L74.753 187.033 L97.74 187.033 Z"/>
+            <path d="M109.888 187.033 L132.875 187.033 L132.127 49.142 L136.612 49.142 C136.612 89.666 176.232 96.817 207.815 100.851 L207.815 76.647 C165.766 71.879 132.127 44.925 132.127 0 L109.888 0 L109.888 187.033 Z"/>
+          </g>
+          <text x="295" y="265" font-family="FFF Acid Grotesk, Arial, sans-serif" font-size="260" letter-spacing="-8" font-weight="400" fill="currentColor">hyperexponential</text>
+        </svg>
+      </div>
+
+      <div class="text">
+        <h1 class="headline">{{HEADLINE}}</h1>
+        <p class="subtitle">{{SUBTITLE}}</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

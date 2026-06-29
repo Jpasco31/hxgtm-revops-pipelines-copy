@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css"></head>
+<body class="hx" style="margin:0;padding:18px;background:#fff">
+<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:6px">
+  <!-- 100..950 -->
+  <!-- generate cards -->
+  <script>
+    const ns=[['100','#F5F5F5','#1D2733'],['200','#F0F0F0','#1D2733'],['300','#E0E0E0','#1D2733'],['400','#C6C7C8','#1D2733'],['600','#848D9A','#fff'],['700','#28323F','#fff'],['800','#1D2935','#fff'],['900','#16212E','#fff'],['950','#0F1924','#fff']];
+    document.write(ns.map(([n,c,t])=>`<div style=\"background:${c};color:${t};border-radius:2px;padding:8px 8px;height:90px;display:flex;flex-direction:column;justify-content:space-between\"><div style=\"font:300 18px/1 var(--font-sans)\">${n}</div><div style=\"font:400 9px/1.3 var(--font-mono);opacity:.85\">${c}</div></div>`).join(''));
+  </script>
+</div>
+</body></html>

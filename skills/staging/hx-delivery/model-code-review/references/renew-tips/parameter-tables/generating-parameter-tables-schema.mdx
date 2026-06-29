@@ -1,0 +1,71 @@
+---
+title: "Generating Parameter Tables Schema"
+---
+
+## Introduction
+
+To use parameter tables within hx Renew, [CSV (Comma Separated Values)](https://en.wikipedia.org/wiki/Comma-separated_values) files must be saved within the `parameter_tables` folder in the hx Renew IDE, along with a `parameter_tables_schema.json` file which defines the structure of all of the parameter tables. This is documented [here](/platform/developer/building-your-model/algorithms/parameter-tables).
+
+To populate the `parameter_tables_schema.json` file, the user will typically have to manually type out the file name, column name and data type for all parameter tables. This article automates this process with the click of one button from within the IDE.
+
+### Script
+
+This can be run as a script within the IDE. Create new file within the `test_cases` folder and place the code below within there. 
+
+This script will find the column names and column type for each file, and place it as a JSON file within the `test_cases` folder. The user can then check `parameter_tables_schema.json` file output and use it in the `parameter_tables` folder.
+
+The folder structure should look like this: 
+
+<img
+  src={require('../../assets/generate_parameter_tables_schema_menu.png').default}
+  />
+
+An example model implementation can be downloaded [here.](../../assets/generate_parameter_tables_schema_model.zip)
+
+_Note: There are instances where this script will not work exactly as the user expects - for example a column of type int may be generated when the preferred column type is float. It is recommended that the user checks the output of this script and makes any appropriate adjustments before using it in their hx Renew model._
+
+```python
+import pandas as pd
+import json
+import os
+import re
+
+# Set up mappings from Pandas datatypes to Renew datatypes
+mappings = {
+    "object": "str",
+    "float": "float",
+    "int": "int",
+    "bool": "bool",
+    "date": "date"
+    }
+
+parameter_tables_path = "/workspace/editing/parameter_tables"
+
+param_table_output_json = {}
+
+# Loop through the different .csv files in the parameter_tables folder within editing
+for subdir, dirs, files in os.walk(os.path.dirname(parameter_tables_path)):
+    for file in files:
+        filepath = os.path.join(subdir, file)
+        if file.endswith(".csv"):
+            mapped_types = {}
+            parameter_table = pd.read_csv(filepath)
+
+            # Loop through each column in the .csv file and infer from the values within the column
+            # which Renew datatype it is i.e. generate the parameter_tables_schema dictionary
+            for col in parameter_table.columns:
+
+                # Use str() to turn object to string to be passed as an argument to re.match()
+                data_type = str(parameter_table[col].dtype) 
+                for mapping in mappings:
+
+                    # If data_type matches one of the keys in mappings, add the column name and mappings key to mapped_types
+                    if re.match(mapping, data_type):
+                        mapped_types[col] = mappings[mapping]
+
+            param_table_output_json[file[:-4]] = mapped_types
+
+# Output the parameter_tables_schema.json file within this subfolder
+with open('/workspace/editing/test_cases/parameter_tables_schema.json', 'w', encoding='utf-8') as f:
+    json.dump(param_table_output_json, f, ensure_ascii=False, indent=4)
+```

@@ -1,0 +1,10 @@
+{
+  "name": "hx-delivery",
+  "version": "0.1.0",
+  "description": "Skills and agents for hx Delivery teams — project management, model developers, etc.",
+  "author": {
+    "name": "Rowan Jeffery-Wall",
+    "email": "rowan.jeffery-wall@hyperexponential.com"
+  },
+  "skills": "./skills/"
+}

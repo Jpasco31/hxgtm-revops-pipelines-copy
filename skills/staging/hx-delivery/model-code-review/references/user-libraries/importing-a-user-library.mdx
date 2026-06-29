@@ -1,0 +1,119 @@
+---
+title: "Importing a User Library"
+---
+
+## Adding a User Library to a Model
+
+To import a published user library into a model or a different user library, you must first open the model or user library for editing. See [Opening a Model](../models/opening-a-model.mdx) for how to do this.
+
+Once the model branch has been opened for editing, you will see any User Libraries that have already been added to it.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_import_1.png").default}
+  width="1000"
+/>
+
+1. Click the 'Add User Library' button and search for the library you wish to add.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_add_library.png").default}
+  width="400"
+/>
+
+2. Click on the library and it will be added to your model version.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_add_library_2.png").default}
+  width="1000"
+/>
+
+## Removing an Installed User Library from the Model or User Library
+
+To remove an installed user library from the model or user library, click the 'more actions' button alongside the library and press 'Remove Library'
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_remove_library.png").default}
+  width="1000"
+/>
+
+#### Saving any Changes
+
+To confirm the addition or removal of any user libraries from your model or user library, make sure you press the 'Commit version' button.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_commit_changes.png").default}
+  width="1000"
+/>
+
+Add a save message and your changes will be saved.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_save_message.png").default}
+  width="400"
+/>
+
+## Importing an Installed User Library
+
+To import a Python module from an installed User Library into your `rating.py`, `tasks.py` or `data_schema.py` files, add the following import statement to the file:
+
+```python
+from libraries.user_lib_1.algorithms import lib
+```
+
+Here you can see an example function is being imported into `rating.py`:
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_import.png").default}
+  width="1000"
+/>
+
+## Inspecting the Usage of User Libraries
+
+If you wish to see where a user library is used, navigate to the library and inspect the 'Labels' pane.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_view_labels.png").default}
+  width="1000"
+/>
+
+This will display which labelled versions of the user library are live, and whether they are imported by a model or a different user library.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_view_labels_2.png").default}
+  width="1000"
+/>
+
+If you wish to display the complete list of library usages, click the 'more actions' button and select 'Show details'.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_show_details.png").default}
+  width="400"
+/>
+
+This will show exactly where the library is being used.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_show_imports.png").default}
+  width="1000"
+/>
+
+## Resolving Conflicts
+
+When adding a user library to a model you will always be able to see all live versions of user libraries which are not imported to your model or user library. Some of them, however, cannot be added to your model due to various conflicts:
+
+- The user library or one of its dependencies import the user library currently being edited.
+- The user library imports another version of an already installed user library.
+- An installed dependency is importing another version of your user library.
+- Another version of your user library is already installed.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/library_conflict.png").default}
+  width="1000"
+/>
+
+In addition to user library conflicts, hx Renew also resolves possible Python package conflicts. When adding a user library, if it attempts to install a python package that conflicts with one directly installed in the model or library being edited, the following warning is shown and the library is not installed.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_python_conflict.png").default}
+  width="600"
+/>

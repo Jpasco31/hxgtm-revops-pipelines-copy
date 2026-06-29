@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Type — eyebrow</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--color-ink, #111923);
+    color: #FFFFFF;
+    font-family: var(--font-sans);
+    padding: 40px 48px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 28px;
+  }
+  .header { display: flex; justify-content: space-between; align-items: baseline; }
+  .header h1 { margin: 0; font: 300 28px/1.1 var(--font-sans); letter-spacing: -0.01em; }
+  .header .meta { font: 400 11px/1.4 var(--font-mono); color: rgba(255,255,255,0.55); letter-spacing: 0.04em; }
+
+  .rule { font: 400 13px/1.5 var(--font-sans); color: rgba(255,255,255,0.7); max-width: 56ch; }
+  .rule strong { color: #fff; font-weight: 500; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .card {
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 180px;
+  }
+  .card.do    { border-left: 2px solid var(--color-lime-400, #C6F23F); }
+  .card.dont  { border-left: 2px solid var(--color-tangerine-500, #F2622E); opacity: 0.78; }
+
+  .card .tag {
+    font: 500 10px/1 var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .do  .tag { color: var(--color-lime-400, #C6F23F); }
+  .dont .tag { color: var(--color-tangerine-500, #F2622E); }
+  .card .why { font: 400 12px/1.5 var(--font-mono); color: rgba(255,255,255,0.55); margin-top: auto; }
+
+  /* Eyebrow style itself */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font: 500 11px/1 var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.85);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 8px; height: 8px;
+    background: var(--color-indigo-400, #7B7BE0);
+    display: inline-block;
+  }
+
+  /* Demo content following an eyebrow */
+  .demo-h { font: 300 28px/1.15 var(--font-sans); letter-spacing: -0.015em; color: #fff; margin: 0; }
+  .demo-body { font: 400 13px/1.5 var(--font-sans); color: rgba(255,255,255,0.65); margin: 0; }
+
+  /* Don't examples */
+  .strike { position: relative; }
+  .strike::after {
+    content: "";
+    position: absolute; left: -4px; right: -4px; top: 50%;
+    height: 1px; background: var(--color-tangerine-500, #F2622E);
+    transform: rotate(-2deg);
+  }
+
+  footer { display: flex; justify-content: space-between; align-items: baseline; }
+  footer .meta { font: 400 11px/1.5 var(--font-mono); color: rgba(255,255,255,0.45); }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>Eyebrow — use sparingly</h1>
+    <div class="meta">JetBrains Mono · 11/uppercase · 0.12em tracking</div>
+  </div>
+
+  <p class="rule">An eyebrow is a <strong>navigational signpost</strong>, not decoration. Use it only when a reader genuinely needs to know <em>where they are</em> in a long document, deck, or guide. If a heading already makes the section obvious, the eyebrow is noise.</p>
+
+  <section class="grid">
+    <div class="card do">
+      <div class="tag">Do · section marker in long-form</div>
+      <div class="eyebrow">02 · Logotype</div>
+      <h2 class="demo-h">The hyperexponential wordmark</h2>
+      <p class="demo-body">Numbered sections in brand guidelines, whitepapers, or multi-chapter case studies. The eyebrow earns its place by orienting the reader.</p>
+      <div class="why">Earns its place: orients the reader inside a numbered series.</div>
+    </div>
+
+    <div class="card do">
+      <div class="tag">Do · category label on a card</div>
+      <div class="eyebrow">Case study</div>
+      <h2 class="demo-h">Aviva cuts pricing cycle by 40%</h2>
+      <p class="demo-body">A grid of mixed content types where the reader must distinguish a case study from a blog post from a webinar at a glance.</p>
+      <div class="why">Earns its place: differentiates content types in a list.</div>
+    </div>
+
+    <div class="card dont">
+      <div class="tag">Don't · decorative kicker</div>
+      <div class="eyebrow strike">About us</div>
+      <h2 class="demo-h">We help insurers price risk</h2>
+      <p class="demo-body">The page heading already tells you where you are. The eyebrow adds nothing and steals visual weight.</p>
+      <div class="why">Drop it. The H1 already communicates the section.</div>
+    </div>
+
+    <div class="card dont">
+      <div class="tag">Don't · on every product feature</div>
+      <div class="eyebrow strike">Feature</div>
+      <h2 class="demo-h">Real-time portfolio analytics</h2>
+      <p class="demo-body">If every card on a page has the same eyebrow, the eyebrow communicates nothing. Use the surrounding section's heading instead.</p>
+      <div class="why">Drop it. Repetition kills signal.</div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="meta">Default: no eyebrow. Reach for it only when the answer to "what is this section?" isn't already obvious.</div>
+    <div class="meta">Never two eyebrows in the same view.</div>
+  </footer>
+</body>
+</html>

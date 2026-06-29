@@ -1,0 +1,96 @@
+---
+title: "Graphs and charts (legacy)"
+---
+
+---
+
+## Legacy charts
+
+**We now support Plotly integration, we strongly recommend that you use the resources [found here](../visualizations/plotly/introduction) to build your charts.**
+
+---
+
+This will introduction you to hx Renew's charting and graphing functionality. You will build a graph to show the exposure and premium associated with each exposure in your model, similar to the one found in the spreadsheet model:
+
+<img src={require("../assets/charts_example.png").default} width="800" />
+
+---
+
+## :floppy_disk: Model Files
+
+| The model files required for this chapter can be downloaded [here](../assets/day_2_graphs.zip). |
+| ----------------------------------------------------------------------------------------------- |
+
+---
+
+## Objectives
+
+- Add chart attributes to nodes in the data schema
+- Create a chart in the view
+- Update the rating algorithm to read the data required to generate the chart
+
+---
+
+## Updating the data schema
+
+The first step in creating a chart is to update the data schema.
+
+Start by adding the required chart attributes to the **exposure** and **premium** data schema objects. **Exposure** is to be plotted as a bar chart and **premium** is to be a line chart on a secondary axis for each industry/trade item.
+
+```python
+"exposure": hx.Float(mode="output", view={"label": "Exposure", "format": {"thousandSeparated":True, "mantissa":0}, "chart": {"series_type": "column", "series_axis": "primary"}}),
+"premium": hx.Float(mode="output", view={"label": "Premium", "format": {"thousandSeparated":True, "mantissa":0}, "chart": {"series_type": "line", "series_axis": "secondary"}}),
+```
+
+Next, add a new output field called `industry_trade_name` to the `industries` list. This should be a string which combines the industry and trade fields together for display purposes. Give the field an appropriate label.
+
+---
+
+## Updating the view
+
+Next, add the chart to the view where data label field is the `industry_trade_name` and the data is `industries`.
+
+```javascript
+<HX.Section title="Chart">
+  <HX.CategoryChart
+    data={["industries"]}
+    fields={["exposure", "premium"]}
+    dataLabelField="industry_trade_name"
+  />
+</HX.Section>
+```
+
+---
+
+## Updating the rating algorithm
+
+The final step is to update the rating algorithm, this is achieved by adding a line of code to the loop below:
+
+```python
+for industry in hxd.industries:
+    industry.industry_trade_name = str(industry.industry_trade.industry) + " - " +  str(industry.industry_trade.trade)
+```
+
+You should now have a chart that looks like this:
+
+<img src={require("../assets/renew_charts.png").default} width="800" />
+
+> **Note:** As you can see from the example above, long data labels are currently not displayed correctly. This is something that will be addressed in a future version of hx Renew.
+
+---
+
+## Feedback
+
+We would really appreciate any feedback that you have about this chapter. All feedback is anonymous, however if you would like us to contact you, please include your e-mail address.
+
+<iframe
+  src="https://aqj5uz28dk1.typeform.com/to/ge5FKPyL"
+  width="100%"
+  height="450px"
+></iframe>
+
+---
+
+## Next steps
+
+The next chapter will demonstrate how to use selectors to display nested lists in hx Renew.

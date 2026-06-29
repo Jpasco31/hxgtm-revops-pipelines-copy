@@ -1,0 +1,120 @@
+---
+title: "Data Cleansing"
+---
+
+## Introduction
+
+Data sets often face challenges with poor formatting causing difficulties in analysis. Additionally, missing data can be a common issue, creating gaps or omissions that compromise the completeness of datasets, affecting the reliability of any subsequent analysis or interpretation.
+
+hx Renew allows users to develop algorithms to pick up these data inconsistencies and resolve them in a way of their choosing. This article will show an example implementation of data cleansing when uploading a Schedule of Values into hx Renew. The python file containing all the functions can be downloaded [here](../assets/data_cleansing.zip).
+
+## Finding Problematic Rows
+
+All of the code in this section of the article is to be called in asynchronous tasks. It is intended to consume a pandas data frame produced from a file upload. More on file uploads and accessing files can be found [here](/platform/developer/building-your-model/algorithms/accessing-files#example-reading-and-writing-an-excel-and-csv-file-using-pandas).
+
+The following code snippet shows the `data_cleansing` function. Here we are finding the problematic rows in our `sov_df` and assigning them to the hxd's `sov_problem_rows` list node.
+
+_Note: Sorting the `problem_rows` is optional_
+
+```python
+def data_cleansing(sov_df: pd.DataFrame, hxd: HX.nodes.StructureNode):
+    """ Function to be called in tasks.
+        Finds problematic rows in sov_df and writes them to the hxd's sov_problem_rows list node.
+    """
+    problem_rows = get_problematic_rows(sov_df, hxd)
+
+    if len(problem_rows):
+        hxd.input.sov_problem_rows = sorted(problem_rows, key=lambda row: row['location_no'] if row['location_no'] else float('inf'))
+        hxd.input.show_problem_rows = True
+        return
+```
+
+We have defined what problem rows to find in the `sov_df` in our `get_problematic_rows` function. This function will return duplicate rows found in `df` and rows that contain nulls or invalid values in the `frame_type` column. We are checking each `frame_type` in `df` against the possible options which we can access through `hx.params`. Additional logic can be written to catch any other kind of problematic rows.
+
+```python
+def get_problematic_rows(df: pd.DataFrame, hxd: HX.nodes.StructureNode):
+    """ Function finds nulls, invalid values in the frame_type field, and duplicates in the df.
+        We must write the non problematic rows the the hxd so they will persist throughout asyn task calls.
+        Returns a list of dictionaries with each problematic row from the df.
+    """
+    rows = (
+        find_nulls(df)
+        .append(find_duplicates(df))
+        .append(find_invalid_values(df, "frame_type", list(hx.params.frame_types["frame_type"])))
+    )
+
+    if not rows.empty:
+        hxd.input.sov_not_problem_rows = df.drop(rows.index.tolist()).to_dict(orient="records")
+
+    issues = rows["issue"].groupby(rows.index).agg(lambda x: ' | '.join(x)) # Combine common rows and make their issues a string list
+
+    problematic_rows = rows.groupby(rows.index).first()
+    problematic_rows["issue"] = issues
+    problematic_rows.replace({np.nan: None}, inplace=True)
+    problematic_rows["frame_type"][~ problematic_rows["frame_type"].isin(list(hx.params.frame_types["frame_type"]))] = None
+
+    return grouped_rows.to_dict(orient="records")
+```
+
+When we run the `data_cleansing` function on a data set with duplicates and invalid `frame_type` values those problem rows will be picked up and assigned to the hxd meaning we can then surface the rows and their issues in a `HX.Table` through the view.
+
+## Inspecting Problematic Rows
+
+<img src={require("../assets/problem_rows_view.png").default} width="1500" />
+
+From this table the user can resolve the problems found in the data set. The status column indicates whether or not the rows issues have been solved. The code for generating this table is called in rating rather than tasks for real time feedback.
+
+The following code snippet is the `data_cleansing_rating` function which determines the resolution status of each problem row.
+
+```python
+def data_cleansing_rating(problem_rows: HX.nodes.List):
+    """ Functon scans through the hxd's problem_rows looking for nulls in each columns_to_check
+        If no nulls or not keep status will be 🟢
+        If nulls and status keep 🔴
+        If duplicate and status keep 🟡
+    """
+    for row in problem_rows:
+        if row.keep == False:
+            row.status = "🟢"
+        else:
+            for column in columns_to_check:
+                if getattr(row, column) == None:
+                    row.status = "🔴"
+                    break
+
+            if row.status == None:
+                if row.issue == "Duplicate":
+                    row.status = "🟡"
+                else:
+                    row.status = "🟢"
+```
+
+This function will keep the user informed about the status of each problem row as they are working through the issues. Once we have a status column of all greens and yellows we will be able to hit the "Resolve" button which will then append these rows to the non problem rows and we will have our cleaned data set.
+
+<img
+  src={require("../assets/resolved_problem_rows_view.png").default}
+  width="1500"
+/>
+
+## Resolving
+
+The code snippet below is the `resolve_rows` function which is to be called from an asynchronous task and is triggered by the "Resolve" button from the screenshots above. The function calls `check_for_nones` which goes through the problem rows once more looking for issues in the rows. If one is found an error will be raised and the task will not finish. If no errors are found in the rows we will then append each one the user selected to keep to the `sov`.
+
+_Note: Sorting the `sov` is optional_
+
+```python
+def resolve_rows(hxd):
+    """ Function will make sure problem rows have been dealt with if not the task will throw an error
+        If problem rows are ok the function then combines the not problem rows with the problem rows
+        and assigns the full list of rows to the sov node.
+        Lastly the function sorts the combined rows in the sov by location number.
+    """
+    check_for_nones(hxd.input.sov_problem_rows) # Will throw fatal error if nones (func defined in the available python script)
+    hxd.input.sov = hxd.input.sov_not_problem_rows
+
+    for row in hxd.input.sov_problem_rows:
+        if row.keep:
+            hxd.input.sov.append(row)
+
+    hxd.input.sov = sorted(hxd.input.sov, key=get_row_location_no)
+```

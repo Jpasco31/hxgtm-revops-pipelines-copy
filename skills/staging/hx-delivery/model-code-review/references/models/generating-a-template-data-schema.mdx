@@ -1,0 +1,24 @@
+---
+title: "Generating a Template Data Schema"
+---
+
+## Generating Data Schemas from Example Data
+
+Once you have defined your [Example Data](/platform/developer/building-your-model/define-your-data/example-data),
+you can use it to generate template Data Schemas.
+To do so, follow the steps in [Running Model Tools](/platform/developer/model-development-process/models/running-model-tools/) with tool name "Generate Data Schema".
+This will create a new file inside your Model's `data_schema` folder, named `_example_data_<date>_<time>.py`,
+containing template Data Schemas for you to copy into your Data Schema file.
+
+The tool will look at the first Example Data structure of each Calculation Mode's array,
+and use them to infer the structure of the Data Schemas and the types of the Nodes.
+Numeric values will be set to `hx.Int` or `hx.Float` depending on whether you include a decimal point in the number;
+for example, `0` will produce a `hx.Int`, while `0.0` will produce a `hx.Float`.
+
+The template Data Schemas will be incomplete, and require further additions which cannot be inferred from Example Data;
+for example, you will need to add the `mode` property for each Value and List Node.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/generate_data_schema.png").default}
+  width="400"
+/>

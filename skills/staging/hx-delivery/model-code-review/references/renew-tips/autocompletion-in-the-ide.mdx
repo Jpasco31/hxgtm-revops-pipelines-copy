@@ -1,0 +1,36 @@
+---
+title: "Autocompletion in the IDE"
+---
+
+Including the syntax provided in the following article will result in improved prompts and autocompletion of variable names defined within your data schema.
+
+This syntax can be included in any functions, within rating or tasks, where the `hxd` is included as an argument to that function.
+
+Here we have demonstrated how to use it within the rating algorithm function:
+
+<table style={{ tableLayout: "fixed" }}>
+<tr>
+<th style={{ width: "50%" }}>Standard Syntax</th>
+<th style={{ width: "50%" }}>Autocompletion Syntax</th>
+</tr>
+<tr>
+<td>
+
+```python
+@hx.rating
+def rating_algorithm(hxd):
+    # Your code goes here
+
+```
+</td>
+<td>
+
+```python
+@hx.rating
+def rating_algorithm(hxd: hx.Hxd):
+    # Your code goes here - with improved autocompletion
+
+```
+</td>
+</tr>
+</table>

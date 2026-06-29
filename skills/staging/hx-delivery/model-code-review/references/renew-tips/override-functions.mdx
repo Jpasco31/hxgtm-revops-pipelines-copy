@@ -1,0 +1,131 @@
+---
+title: "Override Functions"
+---
+
+## Introduction
+
+Override Nodes allow the calculation to specify a value, and for the user to override this value if they wish.
+Details on how to get and set override node values can be found [here](/platform/developer/building-your-model/algorithms/accessing-model-data#override-nodes).
+
+It may be the case that the developer may not know in advance whether a node will be an override or not. In particular, this could happen if the node is used in a custom function written by the developer.
+The function may then be called in many different contexts, some of which may involve the node being an override and others which don't. 
+An example may be if there is a set of rating factors which are looked up from a parameter table. The lookup method is the same each time, however some of the rating factor adjustments may be overrides and others are not.
+
+We would like to add some flexibility to make the code generic enough to handle either case.
+
+## Setup
+
+### Explanation
+
+The solutions below use three functions for which documentation is available:
+
+1. ```getattr``` - https://www.w3schools.com/python/ref_func_getattr.asp, 
+2. ```setattr``` - https://www.w3schools.com/python/ref_func_setattr.asp 
+3. ```hasattr``` - https://www.w3schools.com/python/ref_func_hasattr.asp
+
+When starting to abstract models with User Libraries, we have found these functions extremely useful.
+
+### Data Schema
+
+The data schema contains a mix of input, override, and output nodes as shown below.
+
+```python
+"input_1": hx.float(mode="input", default=0, view={"label": "Input 1"}),
+"output_1": hx.float(mode="output", view={"label": "Output 1"}),
+"output_2": hx.float(mode="output", view={"label": "Output 2"}),
+"override_1": hx.float(mode="override", view={"label": "Override 1"}),
+"override_2": hx.float(mode="override", view={"label": "Override 2"}),
+```
+
+### Get Value
+
+This will be a very simple example where we have a function that squares the input value.
+The function itself is shown below.
+
+```python
+def square(num):
+    return num ** 2
+```
+
+Within the rating algorithm, usage of this function might be as follows.
+
+```python
+hxd.output_1 = square(hxd.input_1)
+```
+
+This will work successfully as-is (or if the argument was an output node), however 
+
+```python
+hxd.output_1 = square(hxd.override_1)
+```
+
+will fail as we need to access the ```selected``` value of the override node. We instead need to write
+
+```python
+hxd.output_1 = square(hxd.override_1.selected)
+```
+
+To be able to handle both cases with a single line of code, we can create a function called ```get_value``` as demonstrated below.
+
+```python
+def get_value(node):
+    """
+    Return the selected value if the node has mode "override"
+    Otherwise, return the node value
+    """
+    return getattr(node, "selected", node)
+```
+
+We can then update the `square` function as follows:
+
+```python
+def square(num):
+    return get_value(num) ** 2
+```
+
+Now, no matter the mode (input / output / override), the success of the `square` function usage is ensured.
+
+### Set Value
+
+A related situation is one where the calculation requires that a node value be set, but there is uncertainty as to whether the node value is an override.
+We have not yet come across such a situation in our models, but for completeness we are including a possible solution here.
+
+The fundamental problem is that an operation such as 
+
+```python
+hxd.output_2 = 2 * hxd.input_1
+```
+
+will succeed, however 
+
+
+```python
+hxd.override_2 = 2 * hxd.input_1
+```
+
+will fail. We instead need to write
+
+```python
+hxd.override_2.calculated = 2 * hxd.input_1
+```
+
+To solve this, we can create another function called ```set_value``` as follows:
+
+```python
+def set_value(node, name, value):
+    """
+    Set the calculated value if the node has mode "override"
+    Otherwise, set the node value
+    """
+    if hasattr(getattr(node, name), "calculated"):
+        return setattr(getattr(node, name), "calculated", value)
+    else:
+        return setattr(node, name, value)
+```
+
+With this function, we can be more certain of success when setting node values.
+
+```python
+set_value(hxd, "output_2", 2 * hxd.input_1)
+set_value(hxd, "override_2", 2 * hxd.input_1)
+```

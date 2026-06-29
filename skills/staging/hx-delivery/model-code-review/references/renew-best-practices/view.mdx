@@ -1,0 +1,100 @@
+---
+title: "View"
+---
+
+## Properties
+
+There are a wide range of view properties available in hx Renew allowing you to build a frontend for your models that suits your needs.
+We recommend making sure you are aware of the all different view properties available.
+
+Some common examples we often see in models, that can be avoided by the use of additional properties include:
+
+- **Scroll bars on Tables**
+
+  We recommend avoiding scroll bars on tables where possible, so the underwriters can have an undisrupted view of the data they are using to price.
+  Properties that might be useful here include:
+
+  - `viewScale` - Zoom out of that page in the model
+  - `fullWidth` - Removing the guttering and make use of the whole width of the screen
+
+- **Buttons**
+
+  We recommend avoiding buttons that stretch across the whole width of the page, especially if your page is set to `fullWidth`.
+  Properties that might be useful here are:
+
+  - `flow` - components sit side by side, rather than underneath each other, within a pane.
+  - `ratio` - specify a width for the components in the pane.
+
+When using properties within the view, we recommend having them in a consistent order throughout the file.
+
+We recommend for all tables, using the `kb-interactive` and `dynamic` properties, to make your tables easier to interactive with for the user.
+
+- `kb-interactive` will allow excel style interactions with your tables, including copy and paste and the standard keyboard shortcuts.
+- `dynamic` will allow your tables to be sorted and filtered
+
+## Constants
+
+Constants (defined `const`) are groups of data items that can be defined at the start of your view and then easily called, without the need for lots of rekeying, across different components.
+
+Using constants can be useful if groups of fields need to be displayed several times in your model.
+
+For example,
+
+```js
+const policyFields = ["assured", "underwriter", "broker"];
+```
+
+```js
+<HX.Section title="General Info">
+  <HX.Pane>
+    <HX.Collection fields={policyFields} />
+  </HX.Pane>
+</HX.Section>
+```
+
+Our in house style for formatting constants is:
+
+- Variable names; start new words with a capital letter, without underscores i.e `policyFields`
+- No spaces before and after `=`
+- Spaces after commas separating variables
+- End line with a semi-colon `;`
+
+If they are defined on a single line, this will look like the example defined above.
+
+If they are defined across multiple lines, this will look like:
+
+```js
+const policyFields = ["assured", "underwriter", "broker"];
+```
+
+_Closing bracket and semi colon in line with `const` declaration_
+
+## Separate files
+
+We recommend creating a separate view file per page in your model and import the view code into your view file. This will help users find fields if they need to be updated at a later stage and prevent your view file becoming really long.
+
+Examples of how to import view code from other files can be found [here](/platform/developer/building-your-model/interface/view#exporting-your-component).
+
+## Formatting
+
+Having well formatted view code will help make your code more readable and easier to maintain in the long run.
+The easiest way to do this is to make sure sure your view code is indented correctly.
+Components should be indented inside each other with the closing tag in line with the opening line.
+This will help also help identify any issues with your code as you are writing it such as any missing closing tags.
+
+When applying our in house style, a well formatted piece of view code will look like so:
+
+```js
+<HX.Section title="General Info">
+  <HX.Pane flow="right">
+    <HX.Collection fields={["assured", "broker", "underwriter"]} />
+    <HX.Collection fields={["hx_core/inception_date", "hx_core/expiry_date"]} />
+  </HX.Pane>
+  <HX.Pane>
+    <HX.Collection
+      fields={["policy_reference", "currency", "renewal_flag"]}
+      horizontal
+    />
+  </HX.Pane>
+</HX.Section>
+```

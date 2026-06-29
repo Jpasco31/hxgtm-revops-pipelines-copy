@@ -1,0 +1,143 @@
+---
+title: "Rating and Tasks"
+---
+
+## Formatting
+
+In your rating files, you may need to store results in temporary variables.
+All temporary variables should be defined in a clear and consistent way, as per the best practices detailed in the [Variable Names](../renew-best-practices/example-data) section of this guide.
+
+A common use of temporary variables will be reading parameter tables into memory.
+Our house style for defining the temporary variables relating to parameter tables is to end the variable name in `_tbl`:
+
+```python
+# Reading in currency.csv parameter table
+currency_tbl = hx.params.currency
+```
+
+When formatting the rest of the code, remember the following things:
+
+- Python code requires the correct indentation to to compile successfully. It will also help make your code more readable.
+- Formatting of code should be consistent. We recommend using the standards in PEP8. These include formatting such as:
+  - No spaces on either side of the `=` sign in function calls
+
+    ```python
+    # Calling a currency conversion function 
+    fx_rate = get_roe(from_ccy="USD", to_ccy="GBP")
+    ```
+
+  - Space before and after all mathematical and relational operators, including not equal `!=` and equal to `==`.
+
+    ```python
+    if hxd.location == "UK":
+      hxd.currency = "GBP
+    ```
+
+## Libraries
+
+Libraries can store any code that is used across multiple models. We recommend creating libraries and importing the code into your models, instead of repeating the code in each individual model.
+
+However, make sure you are not importing any unused libraries or functions from libraries in your final review of your model.
+
+Based on experience, we heavily recommend building at least two models in isolation before working out what can be abstracted into a library.
+
+## Tasks
+
+Tasks can be used for long running pieces of code or procedures that only need to be run once, rather than recalculating after every change. An example of this would be API fetches.
+
+Tasks are linked to buttons which triggers them to execute when clicked and are identifiable by the use of a decorator `@hx.task`.
+You may have other helper functions within your task file, but these do not need to be preceded by the decorator.
+
+When performing API fetches, you may require an API key. We recommend that all API keys are stored as secrets and are not hardcoded in your models.
+This will allow you to update the key, if required, in one place, rather in each individual model and also be more secure.
+
+## Optimise your code
+
+Make sure your code is running efficiently by looking at our [python optimisation mini guide](../python-tips/optimisations/introduction) and implementing any suggestions where appropriate.
+
+## hx Core
+
+You will need to set your hx core values in order to clear any validation errors within your model and allow your model to build successfully.
+
+We appreciate you may have defined these fields elsewhere in your model, but setting them accurately will allow you to use them when looking at your policy landscape, even across different classes of businesses and models.
+
+Further details on our hx core can be found [here.](/platform/developer/building-your-model/define-your-data/standard-nodes#core-data)
+
+## Error handling
+
+We recommend using hx Renew's error-handling capability to help Underwriters populate the model correctly and to stop the model running into any unhandled issues.
+
+Make sure your error messages are helpful and clear, so the user can correct any issues.
+
+Within rating, errors should be validation errors `hx.errors.validation()`. This will allow the user to return to the last working point in the model and rectify any issues. We recommend not using fatal error messages in the rating, unless absolutely necessary, as this will prevent the UW from doing any further pricing.
+
+Within tasks, errors should be fatal errors `hx.errors.fatal()`, again with a clear message. This will display if the task fails to complete, but will not block the underwriter doing further pricing in the rest of the model, like it would within rating.
+
+Further details on error handling can be found [here](/platform/developer/building-your-model/algorithms/error-handling#validation-errors).
+
+## Optional variables
+
+Within the data schema you can set some variables as [optional](/platform/developer/building-your-model/define-your-data/data-schema#optional-values), meaning the underwriter does not have to supply a value and it may be left blank.
+
+When doing so it is important to test your rating works as expected when the fields are left empty. Empty fields will be treated differently than, say, blank strings or 0's.
+
+You may have to include if statements to check the fields are not empty before attempting to use them in any operations or setting them to 0 if they are empty at the very start of your rating to avoid any issues.
+The following example demonstrates how this can be done using regular if statements and ternary operators respectively;
+
+```python
+# Regular if statment
+if layer.signed_share is not None:
+  layer.final_premium = layer.calculated_premium * layer.signed_share
+else:
+  layer.final_premium = 0
+
+# Ternary operator example
+layer.final_premium = layer.calculated_premium * layer.signed_share if layer.signed_share is not None else 0
+```
+
+## Functions
+
+We strongly recommend any operations that are used repeatedly throughout your model are put into functions.
+This will allow user to update the procedures, if required, in one central place, allowing less room for errors. Using functions will also help when unit testing your models.
+
+All functions should be defined outside the rating algorithm or any tasks. Keep all functions at the top of the rating or tasks file so they are easier to refer to at a later stage.
+
+Additionally, your rating can be split across multiple files within the rating or task folders, using a similar approach detailed [here](../renew-tips/data-schema/abstracting-the-data-schema) for the data schema. This will allow you to segment your code, making it easier to find specific calculations, than in one long rating file.
+An example could be splitting your code into separate files for the exposure rating and experience rating sections of your model. The code could then be imported in to rating.py and called from the rating algorithm.
+
+As always, make sure your functions, additional python files and any function arguments are defined clearly so other users can instantly tell what is happening.
+
+Another way to help other users understand your functions, as with any code you write, is the use of comments. Within functions, you can also use `docstrings`, longer multiline comments, to define its purpose. For example:
+
+```python
+def Riebesell(riebesell_base_limit, riebesell_z, x):
+    ''' Calculates the ILF based off the reisbesel curve '''
+    return (x / riebesell_base_limit) ** math.log(1 + riebesell_z, 2)
+```
+
+If a function contains a `docstring` in this way, users can see the description in the prompt that appears when typing the function as well as print it out in the IDE.
+
+<img
+src={require('../assets/docstring.png').default}
+width="240"
+/>
+
+```python
+# Print functions docstring
+print(Riebesell.__doc__)
+```
+
+## Comments
+
+We recommend you comment your code throughout, including functions and additional files, to help users understand what the code is doing and to signpost sections of the rating files.
+
+When your model is complete, make sure all your comments are production ready i.e removing any TODO's or internal commentary you may have added for yourself. This will include removing any unused code that was previously commented out.
+
+Coming back to the central theme of this best practice guide, consistently is key and this applies to the formatting of your comments.
+Our in house style is:
+
+_Space after the # and no full stop_
+
+```python
+# This is a comment
+```

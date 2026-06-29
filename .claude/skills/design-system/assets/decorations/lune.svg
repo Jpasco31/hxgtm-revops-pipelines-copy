@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200"><defs><mask id="lune-mask"><rect width="200" height="200" fill="black"></rect><circle cx="100" cy="100" r="98" fill="white"></circle><circle cx="60" cy="100" r="98" fill="black"></circle></mask></defs><rect width="200" height="200" fill="currentColor" mask="url(#lune-mask)"></rect></svg>

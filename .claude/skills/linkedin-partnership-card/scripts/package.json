@@ -1,0 +1,14 @@
+{
+  "name": "linkedin-partnership-card-exporter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Logo cleanup (Gemini Image API) and Puppeteer PNG exporter for the linkedin-partnership-card skill",
+  "scripts": {
+    "export": "node export_card.js",
+    "cleanup-logo": "node cleanup_logo.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.0.0",
+    "puppeteer": "^24.42.0"
+  }
+}

@@ -1,0 +1,166 @@
+---
+title: "Saving and Publishing a Model"
+---
+
+## Saving a draft version
+
+Before you can add a label to a model version, it must first be saved. This can be done by selecting 'Commit version' when working on a draft version.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_commit_version.png").default}
+  width="1000"
+/>
+
+You will be asked to save your changes with a descriptive message.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_save_changes.png").default}
+  width="600"
+/>
+
+Once saved, the 'Build Status' will show as 'Building' while the system is actively building and validating the model version.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_building_version.png").default}
+  width="1000"
+/>
+
+## Rebuilding a Version of a Model
+
+Sometimes, the build process may fail due to an error in the rating algorithm, this will be indicated in the 'Build Status' column.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_failed_build.png").default}
+  width="1000"
+/>
+
+You can find the reason for the build failure by hovering your mouse cursor over the "Failed" icon. If you believe that the exception has been corrected, you may request a rebuild of the model version by clicking on the "Refresh" icon.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_build_failure_message.png").default}
+  width="1000"
+/>
+
+If you observe a build failure with the reason `Taken down due to incompatibility`, you can contact us for more information.
+
+## Labelling Model Versions
+
+In order to release a version of a model for testing, or to publish the model version, we must first identify the model version by assigning it a label.
+
+1. Navigate to the model.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_model_view.png").default}
+  width="1000"
+/>
+
+2. Select the relevant branch.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_branch_view.png").default}
+  width="1000"
+/>
+
+3. To add a label to the model version, click on the 'more actions' button and select 'Edit Version'.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_edit_version.png").default}
+  width="1000"
+/>
+
+4. Give your version a label which will be used to identify the version; for example, a version number. This label will be visible to users when creating policies, so choose something which will be meaningful to them
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_add_version.png").default}
+  width="600"
+/>
+
+## Releasing a Version of a Model for Testing
+
+While you are working on a model, you may wish to release one or more versions of the model to a friendly underwriter for testing.
+
+1. Assign a label to the model version you wish to test
+
+2. Click on the model version, then select the "Testable" toggle to release this version of the model for testing
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_test_model.png").default}
+  width="1000"
+/>
+
+## Publishing a Version of a Model
+
+To release a model for use by underwriters, you need to publish a version of the model. For most customers, only one version of a model may be published at any time.
+
+There is a two step process for publishing a model version:
+
+1. The developer makes a request for a model version to be published
+
+2. A user with 'approver' permissions approves the publishing of the model version
+
+#### Request Release
+
+1. Assign a label to the model version you wish to publish.
+
+2. Click the 'More Actions' button and select 'Request publish'.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_request_publish.png").default}
+  width="1000"
+/>
+
+The model version will show "Pending"
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_pending_version.png").default}
+  width="1000"
+/>
+
+#### Approve or Reject Release
+
+1. Log into using an Admin or Developer licence
+
+2. You must be logged in as a user with Approver permissions (as assigned by your IT team)
+
+3. You should see a "Releases" button on the left menu
+
+4. Clicking this button will take you to the Releases page. The page is divided into two tables: table "Release Requests" showing pending approvals and table "Models" showing all models which have been published. You should see a release request row for your model.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_release_requests.png").default}
+  width="1000"
+/>
+
+5. Here you can approve or reject the release request.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_approve_reject.png").default}
+  width="1000"
+/>
+
+## Unpublishing a Version of a Model
+
+To unpublish a model from being used by underwriters, click the 'More Actions' button and select 'Unpublish'.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_unpublish.png").default}
+  width="1000"
+/>
+
+## Viewing Unpublished Releases
+
+To display all models including those which have been unpublished, toggle the 'Show unpublished' button.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_show_unpublished.png").default}
+  width="1000"
+/>
+
+## Viewing a Release History of a Model
+
+To inspect the history of a model, click the 'more actions' button and select 'Version history'. Here you will see all of the release actions performed on a model version.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/publishing_history.png").default}
+  width="1000"
+/>

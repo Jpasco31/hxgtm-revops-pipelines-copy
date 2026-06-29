@@ -1,0 +1,146 @@
+---
+title: "Model Profiling in hx Renew"
+---
+
+## Introduction
+
+The **Profiler** is a **model library and UI toolkit** that helps developers measure and explore the execution time of different parts of a model. It combines **lightweight timing utilities** with **powerful frontend visualizations**, giving developers a clear view of performance bottlenecks and execution flow.
+
+The Profiler consists of:
+- A **Python library** to time functions or sections of code, using `@time_me` decorators
+- A **data schema extension** to expose profiler output
+- A **Profiler Page** that brings together multiple components for performance inspection:
+  - A **function tree** to show nested call structure and time distribution  
+  - A **filter interface** that only retains functions whose execution time exceeds a **user-defined threshold**  
+  - A **table** listing every timed section or function  
+  - A **Gantt chart**, implemented as a **Custom UI Component (CUIC)**, to visualize the timing and overlap of function execution
+
+Use the Profiler to:
+- **Identify bottlenecks** in your model logic and make informed decisions—making it a powerful tool for **performance optimization**
+- **Get a full breakdown** of where time is spent in your rating algorithm
+- **Visualize nested performance** in a function tree and Gantt chart
+- **Time individual functions** using simple decorators
+- **Keep timers in production** safely, as the library disables itself outside development mode
+
+<img
+  src={require("../assets/code_profiler_ui.png").default}
+  width="1500"
+/>
+
+Model Profiling is currently supported **only for rating algorithms**. It does **not yet support asynchronous task**.
+
+As a result, any timing decorators or profiling functions applied to task functions will be ignored.
+
+## Installation
+
+You can download the library [here](../assets/model_profiler.zip). To see how to create user libraries, please read our [User Libraries](/platform/developer/model-development-process/user-libraries/) documentation.
+
+## Usage
+
+Model Profiling is designed to be simple to integrate with minimal changes to your existing model. Follow the steps below to enable it.
+
+The library has been set up in such a way to facilitate an easy setup. To profile your code, simply import the library into your model:
+
+```python
+from libraries.model_profiler.algorithms.profiling_hxd_functions import time_me
+```
+
+### Data Schema
+
+For the data schema, simply unpack the nodes contained in the library:
+
+```python
+import hx_data_schema as hx
+from libraries.model_profiler.data_schema.profiler_schema import model_profiler_schema
+
+@hx.data_schema
+def data_schema():
+    return hx.Structure(
+        children={
+            # import profiler schema elements 
+            **model_profiler_schema(),
+            # Your data schema goes here
+        }
+    )
+```
+
+### Rating
+
+For timing the rating algorithm, decorate your rating algorithm with the time_me decorator:
+
+```python
+import hx
+from libraries.model_profiler.algorithms.profiling_hxd_functions import time_me
+
+@hx.rating
+@time_me
+def rating_algorithm(hxd):
+    # Your rating algorithm goes here
+```
+
+This will automatically profile not only the rating algorithm itself, but all function calls within rating too, so you can see details of where bottlenecks in your model occur, and fix accordingly.
+
+### View
+
+Finally, to render the view in the model UI, unpack the profiling page into the view:
+
+```jsx
+/* eslint-disable */
+
+import * as HX from "hx-model-components";
+import timerProfiling from "libraries/model_profiler/view/profilingResultsPage";
+
+function HXModel() {
+  return (
+    <HX.Root>
+      // Your view goes here
+      {timerProfiling()}
+    </HX.Root>
+  )
+}
+
+export default HXModel;
+```
+
+The profiler will automatically pull data from the `model_profiling` structure.
+
+## Custom Timing
+
+The library also lets you create multiple distinct timers, assign them names, and control when each one starts and stops. You then have a convenient way to time specific segments of your code and zoning in on where the bottlenecks are.
+Below is an example of how to use our timer in your code.
+
+```python
+from libraries.timer.algorithms.timer import timer
+
+@hx.rating
+def rating_algorithm(hxd):
+    timer.start("All code")
+
+    timer.start("Section 1")
+
+    ## Section 1 code here
+
+    timer.end("Section 1")
+
+    timer.start("Section 2")
+
+    ## Section 2 code here
+
+    timer.end("Section 2")
+
+    timer.end("All Code")
+
+    timer.print_all()
+```
+
+This will print three times out in the debug console.
+
+1. All code - The time taken to run all of the code in `rating_algorithm`
+2. Section 1 - The time taken to run the code between `timer.start("Section 1")` and `timer.end("Section 1")`
+3. Section 2 - The time taken to run the code between `timer.start("Section 2")` and `timer.end("Section 2")`
+
+_Note: The timer names (i.e. Section 1) are set by the user and the timer name must be identical in timer.start and timer.end_
+
+We recommend, if your are using a custom timer, that you do this using hx Renew's User Library functionality. This will allow you to store the code in one place and still use it across different models, without the need for copying lots of code.
+
+To see how to create user libraries, read our [User Libraries](/platform/developer/model-development-process/user-libraries/) documentation.

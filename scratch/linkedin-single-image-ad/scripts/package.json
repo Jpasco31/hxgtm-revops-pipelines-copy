@@ -1,0 +1,14 @@
+{
+  "name": "linkedin-single-image-ad-exporter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Puppeteer PNG exporter and Sharp focal-point cropper for the linkedin-single-image-ad skill",
+  "scripts": {
+    "export": "node export_card.js",
+    "crop": "node crop_hero.js"
+  },
+  "dependencies": {
+    "puppeteer": "^24.42.0",
+    "sharp": "^0.33.5"
+  }
+}

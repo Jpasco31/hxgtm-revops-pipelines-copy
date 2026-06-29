@@ -1,0 +1,13 @@
+{
+  "name": "webinar-promo-card-exporter",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Puppeteer PNG exporter for the webinar-promo-card skill",
+  "scripts": {
+    "export": "node export_card.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.0.0",
+    "puppeteer": "^24.42.0"
+  }
+}

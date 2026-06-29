@@ -1,0 +1,91 @@
+---
+title: "View Tips"
+---
+
+## Introduction
+
+The ```view.js``` file is an extremely user-friendly way for the developer to layout the various view components on the page.
+It may sometimes be useful for the developer to write more complex code in order to abstract out certain operations and avoid having to write repetitive code.
+A few of the common use cases that we see are shown below.
+
+This is not an exhaustive set - if you come across other use cases please do let us know!
+
+
+### Code
+
+Examples have been provided for the following
+
+1. Concatenation of two lists of items
+2. Adding a prefix to every item in a list
+3. Adding a `shownBy` to every item in a list
+
+```javascript
+/* eslint-disable */
+
+import * as HX from "hx-model-components";
+
+{/*
+Define constants that can be placed as 'fields' or 'data' props within HX Components
+We can build these constants up in pieces
+*/}
+
+const myFields1 = ["field_1", "field_2"];
+const myFields2 = ["field_3", "field_4"];
+
+
+// Example 1 - Concatenation
+
+const myFields = myFields1.concat(myFields2)
+// Will return ["field_1", "field_2", "field_3", "field_4"]
+
+
+// Example 2 - Adding a prefix
+
+// This may be useful if you have several structures with the same fields
+const hurricaneFields = myFields.map(item => ["hurricane/"] + item)
+// Will return ["hurricane/field_1", "hurricane/field_2", "hurricane/field_3", "hurricane/field_4"]
+
+const floodFields = myFields.map(item => ["flood/"] + item)
+// Will return ["flood/field_1", "flood/field_2", "flood/field_3", "flood/field_4"]
+
+
+// Example 3 - Add a shownBy to every item in a list
+
+const hurricaneFieldsVisible = hurricaneFields.map(item => ({ field: `${item}`, shownBy: "show_hurricane" }));
+{/* 
+Will return [
+    {field: "hurricane/field_1", shownBy: "show_hurricane"}, 
+    {field: "hurricane/field_2", shownBy: "show_hurricane"}, 
+    {field: "hurricane/field_3", shownBy: "show_hurricane"}, 
+    {field: "hurricane/field_4", shownBy: "show_hurricane"}    
+]
+*/}
+  
+
+{/* 
+    These constants can then be used in hx view components as shown below
+    We are assuming that each item has been defined appropriately in the data schema
+*/}
+
+
+function HXModel(props) {
+  return (
+    // Your model code goes here
+    <HX.Root>
+      <HX.Page>
+        <HX.Section>
+          <HX.Pane flow="right">
+            <HX.Collection fields={["show_hurricane"]} horizontal />
+            <HX.Collection fields={floodFields} horizontal />
+            <HX.Collection fields={hurricaneFieldsVisible.concat(floodFields)} horizontal />
+          </HX.Pane>
+        </HX.Section>
+      </HX.Page>
+    </HX.Root>
+  );
+}
+
+// etc
+
+export default HXModel;
+```

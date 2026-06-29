@@ -1,0 +1,61 @@
+---
+title: "Developer Portal"
+---
+
+## Introduction
+
+When creating models and libraries, it is important that they are named clearly, so it is clear to other users what their intended purpose is.
+
+## Branches
+
+During model development, we recommend having a 'Master' branch containing any code that has been tested and reviewed.
+Any further developments can be coded in other branches and then merged in to the Master branch once completed and tested. This will help prevent any bugs creeping into your production code, as any changes will have to be manually merged in. Details on model branches and merging functionality can be found [here](/platform/developer/model-development-process/version-control-in-renew#version-control-in-theia-ide).
+
+We recommend initially testing your code in the working branch, but also retesting once merged into Master to ensure the merge has been successful and the model is working as expected.
+Further details on automated testing, which may be useful in this situation, can be found [here](../renew-tips/automated-testing).
+
+Again, branches should be named based on the additional features being developed.
+For example,
+
+<img
+src={require('../assets/branch.png').default}
+width="240"
+/>
+
+Once branches has been merged and are no longer required, we recommend archiving them, to keep the developer portal as clean and tidy as possible!
+
+## Commits
+
+When working in the models, we recommend saving your changes regularly and committing, with a clear description of any changes in the version name, after a significant stage in the development is achieved i.e a new feature of the model is complete.
+
+<img
+src={require('../assets/commit.png').default}
+width="240"
+/>
+
+This will allow you to have a clear audit trail of any model changes and allow you to easily revert back to a previous state if required.
+
+## Secrets
+
+As with models and libraries, secrets should be named appropriately so other users can clearly tell what they are for.
+
+If existing secrets need to be updated, a new version of that secret should be created, rather than creating a brand new secret.
+
+<img
+src={require('../assets/secret_versions.png').default}
+width="240"
+/>
+
+When creating secrets, the identifier needs to be a valid python variable and should be defined in a consistent manner i.e. _\_application_api_user_
+
+Only models that require access to the secret and are actively using the secret should be listed under the Secrets permission.
+
+Further details on creating and using secrets can be found [here](/platform/developer/model-development-process/models/managing-model-secrets#overview).
+
+## User Libraries
+
+Libraries can be used to store common code, that is shared across multiple models.
+Using libraries can will remove the need to copy code between different models and will allow users to easily update it in one place and cascade down to all models that are using it.
+Therefore, we recommend using libraries to store any common code including rating and tasks, data schema and view components.
+
+More details on using 'User Libraries' can be found [here](/platform/developer/model-development-process/user-libraries#overview) as well as a worked example [here](../../training/additional-features/libraries).

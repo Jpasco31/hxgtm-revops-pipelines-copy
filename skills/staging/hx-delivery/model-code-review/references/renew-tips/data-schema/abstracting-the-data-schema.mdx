@@ -1,0 +1,197 @@
+---
+title: "Abstracting the Data Schema"
+---
+
+Within your data schema, you may have repeating structures, such as number formatting or lists with total structures. To avoid having to manually repeat these structures, we can create and call functions throughout our data schema, saving time and reducing rekeying.
+
+## Number formatting
+
+Let's look at the example of setting number formats. In your data schema, you may wish to set the `thousandSeparated` or `percent` format, both with varying number of decimal places.
+
+Traditionally, the syntax for that would look like:
+
+```python
+import hx_data_schema as hx
+
+@hx.data_schema
+def data_schema():
+    return hx.Structure(children={
+        "calculated_premium": hx.Float(mode="output", view={"label":"Calculated Premium", "format":{"thousandSeparated":True, "mantissa":0}}),
+        "ulr": hx.Float(mode="output", view={"label":"ULR", "format":{"output":"percent", "mantissa":2}})
+    })
+```
+
+However, we can create two functions, one for percentages and one for the `thousandSeparated` format. Doing so, reduces the amount of code we have to write.
+
+Your Data Schema file would look like:
+
+```python
+import hx_data_schema as hx
+
+# Formatting functions for use throughout the data schema
+def thousands_format(mantissa=0):
+    return {"thousandSeparated": True, "mantissa": mantissa}
+
+def percent_format(mantissa=0):
+    return {"output": "percent", "mantissa": mantissa}
+
+
+@hx.data_schema
+def data_schema():
+    return hx.Structure(children={
+        "calculated_premium": hx.Float(mode="output", view={"label":"Calculated Premium", "format":thousands_format()}),
+        "ulr": hx.Float(mode="output", view={"label":"ULR", "format":percent_format(2)})
+    })
+```
+
+In these two functions, we have set the default mantissa to be 0. If no argument is passed through the function, no decimal places will be displayed. To set the mantissa, pass through the number decimal places required as in the ULR.
+
+## Repeating structures
+
+Functions can also be used if you have repeating data items throughout the data schema. A common example would a list of variables with a totals structure. Here the list and the structure would share some, if not all, children.
+
+In the following example, we have a list called `layers` and two structures `layer_totals` (total of all the layers) and `layer_share` (the company's total share). They share almost all children, with the exception of `name` and `share` in `layers`.
+
+Traditionally, the syntax for that would look like:
+
+```python
+import hx_data_schema as hx
+
+# Formatting functions for use throughout the data schema
+def thousands_format(mantissa=0):
+    return {"thousandSeparated": True, "mantissa": mantissa}
+
+def percent_format(mantissa=0):
+    return {"output": "percent", "mantissa": mantissa}
+
+
+@hx.data_schema
+def data_schema():
+    return hx.Structure(children={
+        "layers": hx.List(mode="input", children={
+            "name": hx.Str(mode="output", view={"label":"Layer Name"}),
+            "calculated_premium":hx.Float(mode="output", view={"label":"Calculated Premium", "format":thousands_format()}),
+            "ulr": hx.Float(mode="output", view={"label":"ULR", "format":percent_format(2)}),
+            "deductions": hx.Float(mode="output", view={"label":"Deductions", "format":thousands_format()}),
+            "share": hx.Float(mode="input", default=0, view={"label":"Share", "format":thousands_format()}),
+        }),
+
+        "layer_totals": hx.Structure(view={"label": "Total"}, children={
+            "calculated_premium":hx.Float(mode="output", view={"label":"Calculated Premium", "format":thousands_format()}),
+            "ulr": hx.Float(mode="output", view={"label":"ULR", "format":percent_format(2)}),
+            "deductions": hx.Float(mode="output", view={"label":"Deductions", "format":thousands_format()}),
+        }),
+
+        "layer_share": hx.Structure(view={"label": "Share"}, children={
+            "calculated_premium":hx.Float(mode="output", view={"label":"Calculated Premium", "format":thousands_format()}),
+            "ulr": hx.Float(mode="output", view={"label":"ULR", "format":percent_format(2)}),
+            "deductions": hx.Float(mode="output", view={"label":"Deductions", "format":thousands_format()}),
+        })
+    })
+```
+
+However, we can put all the shared children into a function and call it when required. The function `layer_items` returns a dictionary of the shared children.
+
+_Note: When we call the function within our data schema, we need to unpack the children out of this dictionary using the `**` notation._
+
+```python
+import hx_data_schema as hx
+
+# Formatting functions for use throughout the data schema
+def thousands_format(mantissa=0):
+    return {"thousandSeparated": True, "mantissa": mantissa}
+
+def percent_format(mantissa=0):
+    return {"output": "percent", "mantissa": mantissa}
+
+# Layer Items Function
+def layer_items():
+    return {
+        "calculated_premium":hx.Float(mode="output", view={"label":"Calculated Premium", "format":thousands_format()}),
+        "ulr": hx.Float(mode="output", view={"label":"ULR", "format":percent_format(2)}),
+        "deductions": hx.Float(mode="output", view={"label":"Deductions", "format":thousands_format()}),
+    }
+
+
+@hx.data_schema
+def data_schema():
+    return hx.Structure(children={
+        "layers": hx.List(mode="input", children={
+            # Name and Share are not shared children so are not included in the function
+            "name": hx.Str(mode="output", view={"label":"Layer Name"}),
+            "share": hx.Float(mode="input", default=0, view={"label":"Share", "format":thousands_format()}),
+            **layer_items(),
+        }),
+
+        "layer_totals": hx.Structure(view={"label": "Total"}, children={
+            **layer_items(),
+        }),
+
+        "layer_share": hx.Structure(view={"label": "Total"}, children={
+            **layer_items(),
+        })
+    })
+```
+
+## Separate Files
+
+The data schema can be split across multiple files within the data schema folder, and then imported into the main data schema file.
+
+In the following example, we will abstract our layer fields into a separate file, `layer.py` and import them into our data schema.
+
+1. Create a new python file within the data schema folder, by right clicking in the folder and selecting "New File". Call this new file `layer.py`.
+
+   _Hint: python files must end in the.py extension_
+
+2. At the top of the new file add the following code:
+
+   ```python
+   import hx_data_schema as hx
+   ```
+
+   This will allow you to access the data schema properties.
+
+3. Create a function that returns a dictionary of your data items. In our example, this might look like:
+
+    ```python
+    import hx_data_schema as hx
+
+    def layer_fields():
+        return {
+            "layers": hx.List(mode="input", children={
+                "name": hx.Str(mode="input", default="", view={"label": "Name"}),
+                "limit": hx.Float(mode="input", default=0, view={"label": "Limit", "format": thousands_format()}),
+                "excess": hx.Float(mode="input", default=0, view={"label": "Excess", "format": thousands_format()})
+            })
+        }
+    ```
+
+4. At the top of your data schema file, `data_schema.py`, import `layer_fields` from the `layer.py` file
+
+   ```python
+   from data_schema.layers import layer_fields
+   ```
+
+5. Call the `layer_fields` function within your data schema
+   Simply calling `layer_fields()`, will return a dictionary containing our `layers` list like so: 
+
+    ```python
+    {
+        "layers": hx.List(mode="input", children={
+            "name": hx.Str(mode="input", default="", view={"label": "Name"}),
+            "limit": hx.Float(mode="input", default=0, view={"label": "Limit", "format": thousands_format()}),
+            "excess": hx.Float(mode="input", default=0, view={"label": "Excess", "format": thousands_format()})
+        })
+    }
+    ```
+    However, we just want our `layers` list, so we need to extract it from the dictionary returned. To do this, we use an unpacking operator (**) before our function call like so:
+
+   ```python
+   @hx.data_schema
+   def data_schema():
+       return hx.Structure(children={
+           **layer_fields() # Unpack dictionary returned by function
+       })
+   ```
+
+    You can read more about unpacking operators in Python [here.](https://geekflare.com/python-unpacking-operators/)

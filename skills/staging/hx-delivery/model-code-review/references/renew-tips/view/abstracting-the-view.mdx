@@ -1,0 +1,99 @@
+---
+title: "Abstracting the View"
+---
+
+## Introduction
+
+Functions are a very useful way to avoid writing repetitive code. They allow you to use the same view layout for multiple data structures defined in the data schema, provided that they have at least some children fields in common. This can also help to simplify the development and maintenance of the view layout.
+
+## Implementation
+In our example implementation, we will create an abstracted HX.Table using a data schema structure called ```crime```. This structure has two children: ```assets``` and ```staff```. ```staff``` has two children: ```value``` and ```adjustment```, however ```assets``` only has one child called ```value```.
+
+We also define a `utils.js` file within the view folder. To keep our example implementation simple, we have only defined one function in this file. This function is called ```basicTable``` and is used to display a standard interactive HX.Table.
+
+Then in the main `view.js` file we call this defined function using our two defined structures ```assets``` and ```staff``` to display a table. Since ```assets``` does not have a child called ```adjustment```, it is displayed as a grey box as shown in the screenshot below:
+
+<img
+src={require('../../assets/subviews.png').default}
+/>
+
+While we have only demonstrated this for a simple use case, the `utils.js` function can be made more complicated and used to display different structures in a uniform way. 
+
+### Data Schema
+
+```python
+import hx_data_schema as hx
+
+
+@hx.data_schema
+def data_schema():
+    return hx.Structure(
+        children={
+            "crime": hx.Structure(view={"label": "Crime"}, children={
+                "assets": hx.Structure(view={"label": "Assets"}, children={
+                    "value": hx.Float(mode="input", default=0, view={"label": "Value"}),
+                }),
+                "staff": hx.Structure(view={"label": "Staff"}, children={
+                    "value": hx.Int(mode="input", default=0, view={"label": "Value", 
+                      "options": {"summary": {"label": "Number of Employees"}}}),
+                    "adjustment": hx.Float(mode="output", view={"label": "Adjustment", "format": {"output": "percent", "mantissa": 1}}),
+                }) 
+             })    
+        })
+
+```
+
+### View
+
+#### `utils.js` file 
+Create a file called `utils.js` under the view folder and add the following code in it to display a standard table:
+
+```javascript
+/* eslint-disable */
+import * as HX from "hx-model-components";
+
+function basicTable({ tableTitle, dataItems, withPath }) {
+  return (
+    <HX.Table
+      data={dataItems}
+      fields={["value", "adjustment"]}
+      with={withPath}
+      title={tableTitle}
+      kb-interactive
+    />
+  )
+}
+
+export { basicTable };
+
+```
+
+#### `view.js` file 
+
+```javascript
+/* eslint-disable */
+import * as HX from "hx-model-components";
+import { basicTable } from "view/utils"
+
+function HXModel() {
+  return (
+    // Your model code goes here
+    <HX.Root>
+      <HX.Page>
+        <HX.Section title="Sub-Views Example">
+          <HX.Pane flow="right">
+            {basicTable({
+              tableTitle: "Exposure",
+              dataItems: ["assets", "staff"],
+              withPath: "crime"
+            })}
+          </HX.Pane>
+        </HX.Section>
+      </HX.Page >
+    </HX.Root >
+  );
+}
+
+export default HXModel;
+
+```

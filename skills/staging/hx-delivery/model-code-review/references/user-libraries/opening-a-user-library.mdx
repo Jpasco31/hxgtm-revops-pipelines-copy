@@ -1,0 +1,112 @@
+---
+title: "Opening a User Library"
+---
+
+## Opening a User Library for Editing
+
+1. Log in to the Developer Dashboard and select Libraries from the left menu. Use the search function to find the library that you would like to open.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_open_lib.png").default}
+  width="1000"
+/>
+
+2. Select any user library to view an overview of any existing branches. Here you can see the library only has the default `Main` branch.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_branch_overview.png").default}
+  width="1000"
+/>
+
+3. Press the 'Create Draft Version' button.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_create_draft.png").default}
+  width="1000"
+/>
+
+4. The selected user library will now be open for editing.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_edit_branch.png").default}
+  width="1000"
+/>
+
+The user library files will now be available within the Code Editor, in the "editing" folder
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_code_editor.png").default}
+  width="1000"
+/>
+
+You can now create Python modules or UI components which will be accessible from elsewhere in your models.
+
+The user library has the same folder structure as a regular model. While the user library is open for editing, you can use this model for testing the library. Once the user library is saved and imported into a model, the test model is unreachable.
+
+Note: _you may only have one model or user library open for editing at any time_
+
+#### Editing Python modules
+
+Put the modules into folders `editing/libraries/[package_name]/algorithms` and `editing/libraries/[package_name]/data_schema`, where `[package_name]` is the package name you selected when creating the user library.
+
+#### Editing UI Components
+
+Put the view components into folder `editing/libraries/[package_name]/view`, where `[package_name]` is the package name you selected when creating the user library.
+
+Functions that define a UI component must be exported by using the `export` keyword to make the component available for import in Models or other user libraries. For details how to export components please refer to [Exporting your Component](/platform/developer/building-your-model/interface/view/#exporting-your-component).
+
+```jsx
+export default function UserLib1() {
+  return (
+    <HX.Section title="User Library 1">
+      <HX.Pane>
+        <HX.Collection fields={["a", "b", "c"]} />
+      </HX.Pane>
+    </HX.Section>
+  );
+}
+```
+
+## Opening a User Library in Read-Only Mode
+
+1. Log in to the Developer Dashboard and select Libraries from the left menu. Use the search function to find the library that you would like to view.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_open_lib.png").default}
+  width="1000"
+/>
+
+2. Select and expand any user library, and find the branch containing the version which you would like to view.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_branch_overview.png").default}
+  width="1000"
+/>
+
+3. Click on the user library branch. This will bring up the list of versions for this user library
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_versions.png").default}
+  width="1000"
+/>
+
+4. Click on the 'More Actions' button alongside the version you wish to view and select 'Open read only'
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_open_read_only.png").default}
+  width="1000"
+/>
+
+5. The selected user library will now be open as 'Read-only'.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_read_only.png").default}
+  width="1000"
+/>
+
+The user library files will now be available within the code editor in the "read-only" folder
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/libraries_read_only_ide.png").default}
+  width="400"
+/>

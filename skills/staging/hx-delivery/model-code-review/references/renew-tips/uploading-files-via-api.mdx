@@ -1,0 +1,104 @@
+---
+title: "Uploading Files via API"
+---
+
+## Introduction
+
+The hx Renew API does not natively allow for file uploads, but there are instances where it is convenient to upload a file via the API (such as setting up automated testing for a workflow that involves a file upload, or headlessly accessing a model that requires a file).
+
+Instead of passing a file directly, with a few minor model changes it is possible to pass a string representation of a file to the API and "unpack" the file on the other end.
+
+Whilst the examples in this documentation assume read a `.csv` file to a dataframe using pandas, any file type and reading method should work in the same manner. Files larger than 25mb may need to be imported in batches.
+
+An example model implementing this process, and accompanying API call, can be downloaded [here](../assets/file_upload_example.zip).
+
+## Setup
+
+Two actions are needed to set up the model to receive files via API:
+
+1. The file must be converted into a string representation before being sent to the API
+2. The model must be set up to be able to decode the string representation of the file
+
+### 1. Generating a string representation from a file
+
+Outside of hx Renew, you must convert your file contents into a string. You can do this using the below Python script. Note the example below is for a `.csv` file, but this method will work with any file type.
+
+```python
+with open("path/to/file.csv", "rb") as f:
+    file_bytestring = str(f.readlines())
+```
+
+`f.readlines()` produces a list of bytestrings, with each item being a line in the file. This is then converted to a string to get only a single object that we can pass to a node in the model.
+
+Once you have created this string, it must be saved in a json file, in the location of the node that you create in step 2. If you are uploading other inputs via the API at the same time, you can just add this to that json object.
+
+```python
+import json
+
+# Save to dictionary
+input_json = {
+    "bytestring_upload": file_bytestring
+}
+
+# Save this dictionary as a json file
+with open("input_json.json", "w+") as f:
+    f.write(json.dumps(input_json))
+```
+
+This json can then be passed to the set_values endpoint of the API in the usual manner.
+
+### 2. Setting up the model to receive the bytestring
+
+Inside your model, create a new data schema node to hold the bytestring. This should be a string node and can be in any location in your data schema. It is recommended to store it in the same location as the file it is representing.
+
+The node will also need to be an async input to the task that handles normal processing of the file (when uploaded via the UI).
+
+```python
+"bytestring_upload": hx.Str(mode="input", default="", view={"label": "Bytestring Upload"}, async_input=["file_processing_task"])
+```
+
+Then in your model, in the async task where you would read the file, write some logic that checks if the file exists, and if it doesn't, checks instead if the bytestring node is populated. If it is, the model can read from the bytestring as if it were a file by following the logic below. Again, this example reads a `.csv` file into a pandas dataframe, but any file processing can be used as well, just substitute the lines that include `pd.read_csv()`.
+
+```python
+import hx
+import pandas as pd
+
+from ast import literal_eval
+from io import BytesIO
+
+# Define a helper function to convert from bytestring to a file-like object
+# Having this logic within a helper function also ensures that the file_like variable
+# is not stored in memory when the function is completed
+def read_as_file(hxd_node):
+    # First undo the string conversion that was used to fit it into a single hxd node
+    file_bytes_list = literal_eval(hxd_node)
+
+    # Then write this list of bytestrings into a BytesIO object
+    file_like = BytesIO()
+    file_like.writelines(file_bytes_list)
+    file_like.seek(0)  # Reset the cursor to the start of the "file"
+
+    # The returned object behaves exactly like an opened file
+    return file_like
+
+# Inside of the file processing task, determine whether to import from the file node
+# or attempt to read from the bytestring
+@hx.task
+def file_processing_task(hxd, progress):
+    # Check file has been uploaded normally
+    if hxd.file_upload.exists:
+        # Read in in the normal manner
+        with hxd.file_upload.open(mode="b") as f:
+            df = pd.read_csv(f)
+
+    # If no file has been uploaded, check if the bytestring is populated instead
+    elif hxd.bytestring_upload:
+        # Use read_as_file to pass the bytestring directly to the pd.read_csv() function
+        df = pd.read_csv(read_as_file(hxd.bytestring_upload))
+
+    else:
+        hx.errors.fatal("File has not been uploaded")
+
+    # Further processing using df can be done outside of the if-else statement in the normal manner
+    hxd.file_contents = df.to_dict(orient="records")
+```

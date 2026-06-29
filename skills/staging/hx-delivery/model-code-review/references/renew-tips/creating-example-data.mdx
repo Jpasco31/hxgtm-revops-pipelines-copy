@@ -1,0 +1,124 @@
+---
+title: "Creating Example Data"
+---
+
+## Introduction
+
+All data entered into Policy Options on hx Renew is available via API endpoints. Therefore it is simple to extract the snapshot data using a short Python script.
+
+This snapshot extract can then be used to create JSON that can be placed into a model as example data.
+A possible use case for this would be to make it easy to recreate risks from the live environment, either for debugging or for regression testing before a model is released.
+
+## Extracting data via API
+
+### Credentials
+
+The user must obtain appropriate API credentials. Details on how to do this can be found [here](../../platform/admin/it-documentation/api-keys).
+
+If a user does not have direct access to the Admin portal, someone who does have that access will need to generate credentials for that user.
+
+### hx Renew API
+
+The Swagger documentation for the hx Renew APIs is available at https://api.ENVIRONMENT.hxrenew.com/api-docs/v1/ (inserting your own hx Renew environment name in the url). This documentation shows how to get information out of hx Renew at varying levels of granularity.
+In particular, the Snapshot endpoints give back all data (either entered or calculated) within a Policy Option.
+
+_Note: There may be an additional level of security (such as a VPN) that restricts access to these endpoints. Please contact your company IT if you are unable to access this url._
+
+### Script
+
+This can be run as a script within the IDE. Create a new file within the test_cases folder and place the code below within there.
+This script will extract the snapshot data for the Policy Option ID specified at the bottom of the script, and place it as a JSON file within the test_cases folder.
+
+_Note: As with all API calls, the data source `api.{ENVIRONMENT}.hxrenew.com` must be whitelisted. Details of how to do this can be found [here](../../platform/admin/it-documentation/host-whitelisting#overview)._
+
+```python
+import requests
+import json
+import os
+
+
+def get_snapshot(policy_option_id):
+
+    headers = {
+        'Accept': 'application/json',
+    }
+
+    # User TODO
+    # User/Password for Export API credentials
+    user = "user"
+    password = "password"
+
+    auth=(user, password)
+
+    # User TODO
+    # Insert Renew environment name here
+    ENVIRONMENT = "YOUR ENVIRONMENT"
+    
+    # Provide a folder location that the file will be exported to
+    output_folder = "editing/test_cases/"
+    output_file = os.path.join(output_folder, f"snapshot_{policy_option_id}.json")
+    
+    # Call the Renew API endpoint and write the response to a local file
+    r = requests.get(f'https://api.{ENVIRONMENT}.hxrenew.com/api/v1/policies/options/{policy_option_id}/snapshot', headers=headers, auth=auth)
+
+    with open(output_file, "w") as file:
+        json.dump(r.json()["data"], file, indent=4)
+
+
+# Call the function
+if __name__ == "__main__":
+    
+    # User TODO
+    # Specify Policy Option ID to be extracted
+    policy_option_id = 580
+    get_snapshot(policy_option_id)
+```
+
+## Creating Example Data
+
+Once the complete JSON has been extracted, it can be used to generate example data within the IDE. The dataset includes all inputs, outputs and overrides. 
+Therefore it could be used as example data in its current state.
+It may be preferred however to on include inputs and overridden values in the dataset, as it will significantly reduce the size of the dataset and make it more manageable.
+This is demonstrated below.
+
+### Extracting Inputs and Overrides
+
+Information on the mode of each item is contained within the data schema. This can be used in conjunction with the extracted snapshot, to extract just the inputs and overridden values.
+
+To help with this, we have created a Python file called `generate_example_data.py` that should be placed within the test_cases folder in the IDE. 
+It can be accessed [here](../assets/generate_example_data.zip).
+
+You are free to inspect this file if you wish, but it should not be modified. It iterates through each node in the data schema, and based on the mode and node type (String, Float, Structure etc.)
+builds up a corresponding picture of the snapshot, transforming it into example data.
+
+### Usage
+
+This function can be imported and used in other scripts to process one or more complete snapshots into a file that is suitable for example data. An example of such a script is given below.
+
+Placing this file within test_cases will:
+
+- Look for a file called `full_snapshot.json` (you may wish to change this)
+- Process it through the `generate_example_data` function,
+- Output the processed snapshot to another file called `output_snapshot.json`
+
+```python
+import json
+# Import helper function
+from test_cases.generate_example_data import create_example_data
+
+def get_inputs_from_snapshots():
+    
+    # Get input file path
+    file = "editing/test_cases/full_snapshot.json"
+        
+    with open(file, "r") as input_file:
+        # Process input snapshot through helper function
+        policy_json = json.load(input_file)
+        snapshot_inputs = create_example_data(policy_json)
+
+        # Export to output file
+        with open ("editing/test_cases/output_snapshot.json", "w+") as output_file:
+            json.dump(snapshot_inputs, output_file, indent=2)
+
+get_inputs_from_snapshots()
+```

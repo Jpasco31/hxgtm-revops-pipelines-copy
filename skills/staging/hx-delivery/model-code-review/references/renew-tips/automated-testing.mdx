@@ -1,0 +1,202 @@
+---
+title: "Automated Testing"
+---
+
+Automated testing allows model developers to ensure their models are producing the correct results. It allows the results of the model to be easily reconciled back to test cases, say in Excel, or to ensure that if a model is updated that results have not changed.
+
+In the example below, we will set up automated testing for the completed hx Renew Specializations training model. Steps to complete this model are documented [here](/customer-service/training/model-dev-specializations/introduction).
+
+## Example Data
+
+First, set up your example datasets so all inputs in your model are being set appropriately and match any test cases you have.
+
+## Test Cases
+
+### Export Test Case Template
+
+In tools, open `test_cases.py` and uncomment line 7 like so:
+
+<img
+  src={require("../assets/export_test_case_template.png").default}
+  width="1500"
+/>
+
+This function will create a new folder in the `test_cases` folder with all the inputs from the model's example data.
+
+To run this function, select `Test Cases` in the debugger and hit play.
+
+<img src={require("../assets/test_cases_debug.png").default} width="500" />
+
+In the training model, we have two input lists in our data schema - `industries` and `layers`. A file for each of these lists has been created in our new folder, containing all the inputs for each of the list elements. There is also an additional file `root.csv` that contains all other inputs that are not in list nodes. The column names in these files correspond to the data schema items.
+
+Rename the folder that has just been created to be `Test Inputs` and comment out line 7 again.
+
+### Export Test Case Results
+
+Next, uncomment lines 10 and 19.
+
+Replace `your_test_folder_name` to `Test Inputs` (the folder you have just renamed) in line 10 and run `Test Cases` in the debugger once more.
+
+<img
+  src={require("../assets/export_test_case_results.png").default}
+  width="1500"
+/>
+
+This will create a new folder in the `test_cases` folder. It will have the same structure as your `Test Inputs` folder but will also contain any outputs. There is an additional file for our `industry_layers` list, which is an output list.
+
+Again rename this folder `Test Outputs`.
+
+_Note: It is also possible to include the results of async tasks. To do this, use line 14 (for a single async task) or line 16 (for multiple async tasks) instead of line 10. Again replace the file name to point to your Test Input folder and update with the name of your async task(s)._
+
+### Saved Results
+
+In the `test_cases` folder, we will now create a new file, called `saved_results.csv`. Here, we will save some of our model outputs we are expecting from our model. It will be a subset of the values in our `Test Outputs`. You will only need to create your saved results file the first time you set up your automated testing.
+
+In the example below, we have included the following variables and their expected values in the saved results file:
+
+- Base Premium
+- Total Adjustments
+- Technical Premium
+- Total calculated premium across the layers
+- Total charged premium across the layers
+- Total ULR across the layers
+
+<img src={require("../assets/saved_results.png").default} width="1500" />
+
+### Comparing your results
+
+We now have the results we are expecting in `saved_results.csv` and the results the model is actually producing in our `Test Outputs` folder. We need to compare the values in both files and check they match.
+
+To do this, create a folder called `scripts` in your `algorithms` folder and inside that create a new file, `test_example_policies.py`.
+
+In that file, copy and paste the following code:
+
+```python
+from hx_tools.test_cases_service import export_test_case_template, run_all_test_cases, export_test_case_results
+
+import os
+import shutil
+import pandas as pd
+import numpy as np
+
+# Compare against existing results
+# Results that have been previously verified
+# Policy results
+saved_results_policy_filepath = "/workspace/editing/test_cases/saved_results.csv"
+saved_results_policy = pd.read_csv(saved_results_policy_filepath).to_dict("records")
+
+###
+# Delete and recreate all generated test inputs and test outputs
+# This will account for changes in Rating, Data Schema or Example Data since the last time the tests were run
+
+# Delete all files within 'Test Inputs' and 'Test Outputs' folders found within test_cases
+for filename in os.listdir("editing/test_cases/"):
+    if filename in ("Test Inputs", "Test Outputs"):
+        print(f"Removing editing/test_cases/{filename}")
+        shutil.rmtree(f"editing/test_cases/{filename}")
+
+# Create test case template files inside folder: editing/test_cases/_template_YYYYMMDD_hhmmss
+export_test_case_template()
+
+# Rename this exported and timestamped folder to Test Inputs
+for filename in os.listdir("editing/test_cases/"):
+    if filename.startswith("_template_"):
+        org_fp = os.path.join("editing/test_cases/", filename)
+        new_fp = os.path.join("editing/test_cases/", "Test Inputs")
+        os.rename(org_fp, new_fp)
+
+# Run test cases and save the results of running the test cases to folder: editing/test_cases/_results_YYYYMMDD_hhmmss
+results = run_all_test_cases("Test Inputs")
+
+export_test_case_results(results)
+
+# Rename this exported and timestamped folder to Test Outputs
+for filename in os.listdir("editing/test_cases/"):
+    if filename.startswith("_results_"):
+        org_fp = os.path.join("editing/test_cases/", filename)
+        new_fp = os.path.join("editing/test_cases/", "Test Outputs")
+        os.rename(org_fp, new_fp)
+
+# Filepath for results that are generated by test cases
+generated_results_filepath = "/workspace/editing/test_cases/Test Outputs/root.csv"
+generated_results = pd.read_csv(generated_results_filepath).to_dict("records")
+
+# Test by matching on assured - this should not change even if the test ids do
+# The developer should replace this with some unique identifier field within their own Data Schema
+unique_id_field = "assured"
+
+# List of policy level fields to test
+policy_test_fields = [
+    "base_prem", "total_adjustments", "technical_prem",
+    "layer_totals.calculated_prem", "layer_totals.charged_prem", "layer_totals.ulr"
+]
+
+# All saved results should be tested
+# There may be additional example datasets that are not testable
+# Iterate through saved results, compare to the appropriate generate results set for each test field
+
+test_pass = True
+
+# Policy level testing
+for saved_test_row in saved_results_policy:
+    # Get assured to test
+    test_id = saved_test_row.get(unique_id_field)
+
+    # Filter generated tests on this assured
+    gen_test_row = [gen_row for gen_row in generated_results if gen_row.get(unique_id_field) == test_id]
+
+    if not gen_test_row:
+        # The test case does not exist in the generated results
+        print(f"ID {test_id} not found")
+        test_pass = False
+    else:
+        if len(gen_test_row) > 1: # Multiple matches on same assured found
+            print(f"Multiple matches on {test_id} found")
+            test_pass = False
+            break
+
+        gen_test_dict = gen_test_row[0]
+
+        for test_field in policy_test_fields:
+            # Compare values for each field
+            # Tolerance set at 0.001%
+            print(gen_test_dict.get(test_field), saved_test_row.get(test_field))
+
+            # If one item is nan and the other is zero then that is considered a pass
+            # This can happen when a test case does not include all fields and we are testing for a coverage specific field that does not exist
+            if (np.isnan(gen_test_dict.get(test_field)) and not saved_test_row.get(test_field)):
+                print(f"Match - ID {test_id} {test_field} 0.0 match 0.0")
+            elif (np.isnan(gen_test_dict.get(test_field)) and np.isnan(saved_test_row.get(test_field))):
+                print(f"Match - ID {test_id} {test_field} nan match nan")
+            elif not np.isclose(gen_test_dict.get(test_field), saved_test_row.get(test_field), rtol=1e-04):
+                print(f"No match - ID {test_id} {test_field} {gen_test_dict.get(test_field)} does not match {saved_test_row.get(test_field)}")
+                test_pass = False
+            else:
+                print(f"Match - ID {test_id} {test_field} {gen_test_dict.get(test_field)} match {saved_test_row.get(test_field)}")
+
+# Results
+if test_pass:
+    print("Tests passed")
+else:
+    print("Tests failed")
+```
+
+_Note: You will need to update the variables in the `policy_test_fields` to match the variables in your `saved_results.csv` file._
+
+This script will compare the values for the variables listed in the `saved_results` file with the corresponding values in `Test Outputs`, matching on the `_id` fields.
+
+_Note: The script tests the values match within a 0.001% tolerance to allow for rounding differences and also the storing of different types in Python._
+
+To run this script, select the `Python: Current File` option in the debugger dropdown and run it.
+The results of the script will be displayed in the debug console. If all the fields match, a message "Tests Passed" will be returned. If any of the variables do not match, the script will return "Tests Failed", as well as highlighting which variables did not match.
+
+### Future Testing
+
+Once you have set up your automated testing for the first time, you can use these scripts and functions to test your model if, for example:
+
+- You receive more test cases
+- You need to update the model but are not expecting the final outputs to change
+
+To do testing in the future, repeat the steps above, however, there is no need to create or update your `saved_results` file.
+
+If you update the model in a way that changes the final results, you will need to update your `saved_results` to reflect the new results.

@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__claude_ai_Notion__notion-fetch",
+      "mcp__claude_ai_Notion__notion-get-comments",
+      "mcp__claude_ai_Notion__notion-search",
+      "Bash(python3 skills/dossier-feedback/scripts/list_accounts.py *)",
+      "Bash(python3 skills/dossier-feedback/scripts/fetch_comments_payload.py *)",
+      "Bash(python3 skills/dossier-feedback/scripts/resolve_account.py *)",
+      "Bash(python3 skills/dossier-feedback/scripts/build_truths_file.py *)",
+      "Bash(python3 skills/dossier-feedback/scripts/aggregate_routine_summary.py *)",
+      "Write(/tmp/**)",
+      "Edit(/.claude/skills/kb-lint/**)",
+      "Bash(echo \"exit:$?\")",
+      "Task",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(wc:*)",
+      "Write(outputs/**)",
+      "Edit(raw/**)",
+      "Write(raw/**)",
+      "ListMcpResourcesTool",
+      "ReadMcpResourceTool",
+      "Bash(node .claude/skills/design-system/scripts/verify_fonts_inline.js)"
+    ],
+    "additionalDirectories": [
+      "../hxgtm-mcp-server",
+      "/Users/jericho/Developer/Huw/hx_projects/hxgtm-revops-pipelines/.claude/skills/kb-lint/references"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\"${CLAUDE_PROJECT_DIR:-$(pwd)}/scripts/install_card_skill_deps.sh\" 2>&1 || true'"
+          }
+        ]
+      }
+    ]
+  }
+}

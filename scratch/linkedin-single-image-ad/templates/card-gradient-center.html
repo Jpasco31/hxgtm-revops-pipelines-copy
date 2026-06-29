@@ -1,0 +1,175 @@
+<!--
+  linkedin-single-image-ad scaffold - gradient center aligned (Figma 1482-54800)
+  Forest or Ink gradient (default Forest), centered ~76px white headline, full-bleed
+  product mockup at bottom. No CTA pill on this variant.
+  Placeholders:
+    FONT_FACE_BLOCK        - paste contents of
+                             .claude/skills/design-system/tokens/fonts-inline-card.css
+                             (3 base64-inlined @font-face rules)
+    {{HEADLINE}}           - sentence-case, brand-approved language
+    {{SUBTITLE}}           - optional one-line descriptor (or remove the .subtitle node)
+    {{HERO_IMAGE_NODE}}    - <img src="hero/portfolio--center.png" alt=""> for the
+                             pre-cropped 1080x600 asset, OR empty string
+    {{GRADIENT_BASE}}      - #1C2733 (Ink) / #01514F (Forest). Coral is forbidden.
+    BG_STACK comment slot  - paste the chosen gradient recipe (Forest / Ink) from
+                             ../README.md ("Gradient recipes (CSS)") into .bg-base.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LinkedIn single image ad - {{HEADLINE}}</title>
+<style>
+  {{FONT_FACE_BLOCK}}
+
+  :root {
+    --font: 'FFF Acid Grotesk', Arial, sans-serif;
+    --gradient-base: {{GRADIENT_BASE}};
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0a;
+    font-family: var(--font);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    box-sizing: border-box;
+  }
+
+  .card {
+    position: relative;
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    border-radius: 4px;
+    color: #fff;
+    isolation: isolate;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .bg-base {
+    position: absolute; inset: 0;
+    z-index: 0;
+    /* BG_STACK: paste the chosen gradient recipe (Forest / Ink) from
+       ../README.md ("Gradient recipes (CSS)") here, replacing this rule. */
+    background:
+      radial-gradient(ellipse 55% 70% at 12% 20%, rgba(120, 200, 180, 0.25) 0%, rgba(120, 200, 180, 0) 65%),
+      radial-gradient(ellipse 80% 60% at 50% 45%, rgba(60, 130, 120, 0.22) 0%, rgba(60, 130, 120, 0) 70%),
+      radial-gradient(ellipse 70% 90% at 95% 90%, #00211f 0%, rgba(0, 33, 31, 0) 70%),
+      linear-gradient(125deg, #0d6260 0%, #075753 40%, #034743 70%, #002927 100%);
+  }
+
+  .bg-grain {
+    position: absolute; inset: 0;
+    opacity: 0.18;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    z-index: 1;
+  }
+
+  .bg-vignette {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 90% 90% at 50% 100%, rgba(0, 0, 0, 0.30) 0%, rgba(0, 0, 0, 0) 70%);
+    z-index: 2;
+  }
+
+  .hero {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1080px;
+    height: 600px;
+    z-index: 3;
+    overflow: hidden;
+  }
+  .hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+  }
+
+  .content {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    padding: 60px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 96px;
+  }
+
+  .logo {
+    color: #FFFFFF;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .logo svg {
+    height: 45px;
+    display: block;
+  }
+
+  .text {
+    width: 100%;
+    text-align: center;
+    max-width: 960px;
+  }
+
+  h1.headline {
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 76px;
+    font-style: normal;
+    line-height: 1.1;
+    margin: 0;
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 28px;
+    font-style: normal;
+    line-height: 1.25;
+    color: rgba(255, 255, 255, 0.72);
+    margin: 24px 0 0;
+    text-wrap: balance;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="bg-base"></div>
+    <div class="bg-grain"></div>
+    <div class="bg-vignette"></div>
+
+    <div class="hero">{{HERO_IMAGE_NODE}}</div>
+
+    <div class="content">
+      <div class="logo">
+        <svg viewBox="0 0 2600 320" xmlns="http://www.w3.org/2000/svg" aria-label="hyperexponential">
+          <g transform="translate(0,40) scale(1.18)" fill="currentColor">
+            <path d="M97.74 187.033 L97.74 0 L75.501 0 C75.501 44.925 42.049 71.879 0 76.647 L0 100.851 C31.583 96.817 71.203 89.666 71.203 49.142 L75.688 49.142 L74.753 187.033 L97.74 187.033 Z"/>
+            <path d="M109.888 187.033 L132.875 187.033 L132.127 49.142 L136.612 49.142 C136.612 89.666 176.232 96.817 207.815 100.851 L207.815 76.647 C165.766 71.879 132.127 44.925 132.127 0 L109.888 0 L109.888 187.033 Z"/>
+          </g>
+          <text x="295" y="265" font-family="FFF Acid Grotesk, Arial, sans-serif" font-size="260" letter-spacing="-8" font-weight="400" fill="currentColor">hyperexponential</text>
+        </svg>
+      </div>
+
+      <div class="text">
+        <h1 class="headline">{{HEADLINE}}</h1>
+        <p class="subtitle">{{SUBTITLE}}</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

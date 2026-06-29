@@ -1,0 +1,205 @@
+---
+title: "Version Control in Renew"
+---
+
+## Overview
+
+hx Renew features a business-focused version control system to allow you to automatically keep a history of the changes you have made to your model over time. Version control in hx Renew consists of versions and branches:
+   <img
+    src={require('../assets/ModelDevelopmentProcess/versionControl-overview.png').default}
+    width="400"
+    alt="Version Control Overview"
+  />
+
+#### Versions
+
+Versions allow you to save all of your model code, giving you an audit trail of changes to your model which you can refer back to and recover later if you need to. If you are familiar with the git version control system, these are equivalent to git commits.
+
+#### Branches
+
+Sometimes you want to try different approaches with your model at the same time – for instance, you might want to try a few different rating algorithms and test them with your underwriters. If you were working in Excel, you would do this by making multiple copies of your spreadsheet. Branches work in a similar way – you can create a new branch of your model from any existing model branch, and continue working on the two (or more) branches independently.
+
+## Creating a New Model Version
+
+When you are editing a model, you can save the changes you have made from within the Developer Portal. This will create a new version of your model.
+
+1. Access the Developer Dashboard and select 'Models' from the left menu. Here you will see a list of all models, that is searchable.
+
+<img
+  src={require("../assets/ModelDevelopmentProcess/VersionControl/developer_models_list.png").default}
+  width="1000"
+/>
+
+2. Select the Model that you wish to create a new version of, you will then see an overview of the Model, including existing Branches and Labels.
+
+<img
+  src={require("../assets/ModelDevelopmentProcess/VersionControl/developer_model_view.png").default}
+  width="1000"
+/>
+
+3. Click the Branch that you would like to edit and you will see the versions that already exist.
+
+<img
+  src={require("../assets/ModelDevelopmentProcess/VersionControl/developer_model_versions.png").default}
+  width="1000"
+/>
+
+4. Use the 'Create Draft Version' button to create a new version. Note that this will use the most recently saved version.
+
+The draft version will open, showing any user libraries and Python packages.
+
+<img
+  src={require("../assets/ModelDevelopmentProcess/VersionControl/developer_draft_version.png").default}
+  width="1000"
+/>
+
+5. Open the code editor and make the required changes to the model. When you return back to the model view, you will be able to commit the version, or discard the draft.
+
+<img
+  src={require("../assets/ModelDevelopmentProcess/VersionControl/developer_commit_version.png").default}
+  width="600"
+/>
+
+6. You are required to add a message when saving your version.
+
+<img
+  src={require("../assets/ModelDevelopmentProcess/VersionControl/developer_save_version.png").default}
+  width="600"
+/>
+
+7. The new version is now available.
+
+<img
+  src={require("../assets/ModelDevelopmentProcess/VersionControl/developer_new_version.png").default}
+  width="1000"
+/>
+
+## Branching from an Older Model Version
+
+It is also possible to branch from an older model version. To do this, navigate to the relevant model and branch, then select the "More Actions" button and click 'Create Branch' from version.
+
+<img
+  src={require("../assets/ModelDevelopmentProcess/VersionControl/developer_branch_old_version.png").default}
+  width="1000"
+/>
+
+A default name will be suggested which is amendable if required. Once you are happy with the name, press 'Create Branch'.
+
+<img
+  src={require("../assets/ModelDevelopmentProcess/VersionControl/developer_branch_from_version.png").default}
+  width="600"
+/>
+
+When you return back to the model view you will see the new branch.
+
+<img
+  src={require("../assets/ModelDevelopmentProcess/VersionControl/developer_branch_view.png").default}
+  width="1000"
+/>
+
+## Version Control in Theia IDE
+
+Renew provides some embedded functionality for managing version control within the Theia IDE you use to write and edit model code. These features currently are:
+
+- Viewing the current changes made to the Model Branch being edited
+- Comparing other Model Versions to the current editing Model
+- Merging other Model Versions into the current editing Model
+
+This functionality makes use of the VCS (Version Control System) Panel, which can be accessed on the left of the IDE as shown by the red circle, and the Status Bar, the blue bar which runs along the bottom of the IDE.
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-layout.png').default}
+    width="700"
+    alt="IDE layout"
+   />
+
+### Viewing Current Changes
+
+Initially there will be no content in the VCS Panel or on the Status Bar.
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-empty.png').default}
+    width="700"
+    alt="IDE empty"
+   />
+
+If we check out a Model Branch for editing and make changes, we can see these appear in the VCS Panel. They are split into 3 categories; Modified, Added and Removed files.
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-changes.png').default}
+    width="700"
+    alt="IDE changes"
+   />
+
+If you click on an Added or Removed file, it will open the file in the IDE. N.B. You cannot edit and save a removed file as it no longer exists in your editing model.
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-removed.png').default}
+    width="700"
+    alt="IDE removed"
+   />
+
+If you click on a Modified file, it will open a side-by-side diff of the changes made in this file, with the original on the left and the current on the right. Changes can be made and saved in the right-hand editor and the diff will update automatically.
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-modified.png').default}
+    width="700"
+    alt="IDE modified"
+   />
+
+### Comparing Model Versions
+
+Renew supports comparing the current editing state of a Model Branch to any other Version on any other Branch of the same Model. This can be very useful to see how 2 branches have diverged, or several consecutive changes all together. In the example below we have an editing Model Branch open with some saved changes and some current changes, and we would like to compare it to the very first Version of the Model.
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-compareInitial.png').default}
+    width="700"
+    alt="IDE modified"
+   />
+
+As you can see, there is only one current change to the `view.js` file. If we want to compare this state to the first Version, we must first open that Version read-only. This adds the files to the workspace as shown, but also notice the addition of a "Compare" and "Merge" button on the Status Bar. These options are only available when at least one Model Version is open read-only.
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-compareOpen.png').default}
+    width="700"
+    alt="IDE compare open"
+   />
+
+If you click the "Compare" button, a menu pops up asking which Version you would like to compare as you can have multiple open at once. Typing in the text box will filter the options.
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-compareMenu.png').default}
+    width="700"
+    alt="IDE compare menu"
+   />
+
+Upon selecting a Version, the VCS Panel will be updated to show the changes against that Version in addition to the current editing changes.
+
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-compareChanges.png').default}
+    width="700"
+    alt="IDE compare changes"
+   />
+
+As you can see, the saved changes on the Model Branch are also present in the comparison in this example. Also note the "Compare" button has changed to "Stop Comparing", which will stop the comparison when clicked.
+
+### Merging Model Versions
+
+Renew also supports merging Versions into the current editing Model Branch, provided they are from any Branch of the same Model. Versions are merged by finding their nearest common ancestor and combining the changes from each path from the ancestor to each version. As both paths could have edited the same file, it is possible for there to be "Merge Conflicts" which the developer will need to resolve by choosing to include either, both or neither of the changes.
+
+In order to merge a Model Version into the current editing Model Branch, you must have at least one Model Version open read-only from the same Model as the current editing and no current changes to the editing Model. It is a sensible idea to first compare the changes using the "Compare" button outlined above before attempting to merge.
+
+Once you have this set up, you can click the "Merge" button on the Status Bar, which will open a menu to allow you to choose which applicable Model Version to merge, similar to the Compare menu.
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-mergeMenu.png').default}
+    width="700"
+    alt="IDE merge menu"
+   />
+
+Upon selecting a Version, the 2 Versions will be merged together, accepting changes from both, with the overall resultant differences made in the current editing Model as current changes. These can then be immediately seen in the VCS Panel.
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-mergeResults.png').default}
+    width="700"
+    alt="IDE merge results"
+   />
+
+As you can see in this example, there is a "Merge Conflict" (overlapping changes in each version) in its own section in the VCS Panel current changes. Clicking on this file brings up a side-by-side diff where the changes can be seen and edited to provide the desired functionality.
+   <img
+    src={require('../assets/ModelDevelopmentProcess/ide-mergeConflict.png').default}
+    width="700"
+    alt="IDE merge conflict"
+   />
+
+N.B. Merging is a useful tool however it holds no guarantee of producing a working result, you should always thoroughly check the effects of a merge and test the Model.

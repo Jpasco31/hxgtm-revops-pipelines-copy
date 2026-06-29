@@ -1,0 +1,368 @@
+# kb-update group configuration
+#
+# kb-update publishes raw-vs-canon findings for an uploaded raw source
+# file into a per-group Notion database. This file is the single source
+# of truth for:
+#
+#   label                  — human-readable name (shown in pre-flight)
+#   codeowner              — team responsible for this slice
+#   active                 — if false, kb-update refuses to run for this
+#                            group unless --force is passed
+#   canon                  — canon paths (relative to the MCP server's
+#                            context/ root) that belong to this group.
+#                            Globs (**) are supported.
+#   raw                    — raw staging path (relative to the repo root).
+#                            kb-update itself does NOT read from this
+#                            folder — it operates on files uploaded via
+#                            Claude Code desktop chat — but the field is
+#                            kept here so `topic` narrowing and filename
+#                            reporting stay consistent with kb-lint.
+#   notion_data_source_id  — Notion data source (collection) ID for the
+#                            group's "KB - <label>" database. Created under
+#                            the "KB - Updates Review" landing page.
+#                            Resolution order:
+#                              1. --parent-data-source CLI arg
+#                              2. KB_UPDATE_NOTION_DS_<GROUP_UPPER> env var
+#                                 (e.g. KB_UPDATE_NOTION_DS_COMPETITIVE)
+#                              3. notion_data_source_id below
+#
+# The canon globs MUST stay in sync with .claude/skills/kb-lint/config.yaml
+# — kb-lint is the source of truth for canon group scope. Edit both files
+# when changing group boundaries. The `raw:` staging paths are owned by
+# kb-update alone (kb-lint no longer scans raw/), so they live only here.
+#
+# Activating a new group: flip `active: false` → `active: true` here and
+# verify kb-update runs with `/kb-update --group <slug>`.
+#
+# Adding a new group: add it to both .claude/skills/kb-lint/config.yaml and this
+# file, then run `/kb-update --notion-setup` to create the matching
+# Notion database under the "KB - Updates Review" landing page.
+#
+# Top-level sections in this file:
+#   global         — cross-group knobs (comparator model, batch wave size,
+#                    deny list, provenance comment toggle).
+#   source_tiers   — 5-tier source-trust taxonomy used by the comparator
+#                    to route findings. See references/raw-canon-comparator.md.
+#   groups         — per-group scope (canon, raw staging, Notion DB) plus
+#                    optional per-group policy (section_schema, scoping,
+#                    aliases). Today only `competitive` carries policy;
+#                    other groups fall back to tier-only gating.
+
+global:
+  # Sonnet is fast enough for per-file comparators (raw + 1 canon file
+  # per subagent); Opus is reserved for the orchestrator and dedup.
+  comparator_model: sonnet
+  # Number of raw files processed concurrently in --batch mode.
+  batch_wave_size: 3
+  # Write an HTML provenance comment into canon on each applied edit.
+  # Invisible in rendered Notion / GitHub markdown; visible in git blame.
+  include_provenance_comment: true
+  # Content types the comparator drops on sight. Counted in stats as
+  # `dropped_deny_list: N` so reviewers can see how many findings were
+  # scrubbed. Free-text strings — the comparator prompt enumerates them.
+  deny_list:
+    - "staffing changes or personality observations about competitor employees"
+    - "executive departure or hiring speculation"
+    - "direct customer quotes (must be paraphrased — see raw-canon-comparator.md § Quote paraphrasing)"
+
+# 5-tier source-trust taxonomy. Inference happens at Step 3a from the
+# raw file's `source_type` frontmatter or URL domain. See
+# references/raw-canon-comparator.md for the full rubric and
+# canon-weight rule (existing canon carries implicit tier_2 weight).
+source_tiers:
+  tier_1:
+    label: "Primary customer / independent attributed"
+    examples:
+      - gong_call
+      - customer_interview
+      - earnings_call
+      - 10k
+      - press_release
+      - analyst_report
+      - industry_news_attributed
+    can_update: all_sections
+
+  tier_2:
+    label: "Internal hx briefing"
+    examples:
+      - hx_briefing
+      - live_session_writeup
+    can_update:
+      - "Strengths"
+      - "Weaknesses / watch-outs"
+      - "Notes / open questions"
+    caveat: "Render inline italic caveat on Strengths/Weaknesses findings"
+    blocked_sections:
+      - "Snapshot"
+      - "hx positioning"
+      - "Talk track"
+      - "Core products"
+
+  tier_3:
+    label: "Single-source internal intel"
+    examples:
+      - slack_internal
+      - internal_note_unverified
+    can_update:
+      - "Notes / open questions"
+    tag: "single-source"
+
+  tier_4:
+    label: "Informal external"
+    examples:
+      - slack_external
+      - teams_chat
+      - linkedin_post
+      - rumour
+    can_update:
+      - "Notes / open questions"
+    tag: "informal-unverified"
+    render_prefix: "Informal (unverified):"
+    caveat: "Can seed a Notes item only; requires explicit Notion approval before landing in canon."
+    significance_gate:
+      description: "Tier 4 must clear a 'worth noting' bar before a finding is emitted. Default posture is drop."
+      criteria_any_one_required:
+        - "Corroborates or contradicts a specific claim already in canon for this competitor"
+        - "Signals a material competitive move: new product, pricing change, key exec departure, named customer win/loss, strategic pivot, M&A"
+        - "Surfaces a capability or weakness that changes how sales should position against this competitor"
+        - "References a specific dated event (earnings, launch, outage) that canon does not already capture"
+      auto_drop_examples:
+        - "Generic marketing language with no new fact"
+        - "Internal process / ops chatter unrelated to competitive posture"
+        - "Opinions without supporting signal (\"I think X is struggling\")"
+        - "Restatement of something already in canon with no new angle"
+        - "Peripheral mentions where the competitor is not the subject"
+      stats_counter: "dropped_tier4_low_signal"
+
+  tier_5:
+    label: "Vendor marketing"
+    examples:
+      - vendor_blog
+      - vendor_website
+      - vendor_announcement
+    can_update:
+      - "Notes / open questions"
+    render_prefix: "Vendor claim (unverified):"
+
+groups:
+  competitive:
+    label: "Competitive Intelligence"
+    codeowner: "competitive-intelligence"
+    active: true
+    canon:
+      - guidance/competitive/**
+      - truth/market/competitors.md
+    raw: raw/competitive/
+    notion_data_source_id: "2114ca07-7e5f-4772-9c6d-ea6868860779"
+    # Canon-narrowing strategy for Step 3b. Supported values:
+    #   filename_prefix  (preferred) — extract competitor stem from the
+    #                    raw filename's first dash-/underscore-delimited
+    #                    segment (`federato-intel-summary.md` → `federato`)
+    #                    and load only the matching canon file + always_include.
+    #                    Zero content scanning. Requires raw files to follow
+    #                    `<competitor>-<description>.md`. Authors uploading a
+    #                    multi-entity scan must split it into per-entity files
+    #                    first or temporarily flip the group to filename_entity.
+    #   filename_entity  (legacy) — content-scan the raw body for every canon
+    #                    stem. Catches multi-entity scans at the cost of firing
+    #                    one subagent per matched stem.
+    #   (unset)          load all canon files for the group.
+    scoping_strategy: filename_prefix
+    # Per-entity sliced attachments. Files listed here are NOT fanned
+    # out as their own subagent; instead each matched entity's slice of
+    # the summary file is attached to that entity's tuple as an
+    # additional writable canon path. See load-inputs.md
+    # "Summary-file slice".
+    #
+    # Intentionally empty as of 2026-04 — truth/market/competitors.md
+    # moved to `foundational_canon` below so the full catalog is always
+    # writable, not just the per-entity slice. Leave empty unless a
+    # future summary file is added that genuinely benefits from slicing.
+    always_include: []
+    # Files always attached WHOLE (no slicing) to every entity tuple
+    # produced by narrowing. Use for group-wide canon that every
+    # competitor-level subagent may need to compare against (positioning
+    # claims, top-level guidance, the full competitor catalog).
+    #
+    # Routing policy for foundational files differs from per-entity
+    # profiles: findings targeting foundational files must either be
+    # UPDATES to existing text (contradictions, refinements,
+    # corrections) or genuinely critical group-wide additions. Run-of-
+    # the-mill per-competitor colour does NOT belong here — that goes
+    # to the profile. See references/comparators/competitive.md
+    # "Foundational-file routing policy" and load-inputs.md
+    # "Foundational canon" for the full rule set.
+    #
+    # Findings whose natural home is a foundational file but that are
+    # neither updates nor critical additions are DROPPED (not demoted
+    # to the per-entity profile) to keep both file classes lean.
+    foundational_canon:
+      - guidance/competitive/README.md
+      - guidance/competitive/positioning.md
+      - truth/market/competitors.md
+    # Optional alternate spellings for canon filenames. Populate only
+    # when the scope-narrowing fallback log surfaces a real miss (e.g.
+    # `[scope_narrowing] FALLBACK: no matches`). Empty by default.
+    # Format: <filename>: [alias1, alias2, ...]
+    canon_aliases: {}
+    # Hard cap on new sections created per run. Set to 0 to force the
+    # comparator to map every finding into an existing section
+    # (unmapped findings demote to "Notes / open questions").
+    max_new_sections_per_run: 0
+    # Section-purpose rules. Each finding must route into one of the
+    # sections below, obey its `eligible_tiers`, and match the `style`
+    # line. Section names must match canon headings exactly (casing and
+    # slashes are load-bearing — verified against all 18 competitive
+    # files). Sections with `scope_gated_by: "Core products"` require
+    # the finding to tie to a listed Core product; comparators demote to
+    # Notes otherwise (graceful-degradation: skip the gate if the file
+    # has no Core products section yet).
+    section_schema:
+      - name: "Snapshot"
+        purpose: "1–2 sentences, 50-word cap. Lead with category (what they are). Follow with EXACTLY ONE clause naming the main limit or scope. Multiple limits → split: one to Snapshot, rest to Weaknesses as separate findings. See references/competitor-style-guide.md for the authoritative rule."
+        max_words: 50
+        eligible_tiers: [tier_1]
+        style: "prose; no bullets, customer names, quotes, funding, dates, feature lists, or enumerated limit lists"
+      - name: "Where they show up"
+        purpose: "3–6 bullets: buyer pains / initiatives they're invited into"
+        max_items: 6
+        eligible_tiers: [tier_1, tier_2]
+        style: "domain/initiative per bullet; no product names, customer accounts, or comparative framing"
+      - name: "Core products"
+        purpose: "2–5 authoritative products; bolded name — one-sentence description"
+        max_items: 5
+        eligible_tiers: [tier_1]
+        style: "**Product** — description; main platform/module offerings only, not minor features, unshipped roadmap, integrations, or UI capabilities"
+      - name: "Strengths"
+        purpose: "4–6 bullets; bolded lead phrase — evidence"
+        max_items: 6
+        eligible_tiers: [tier_1, tier_2]
+        scope_gated_by: "Core products"
+        style: "**Lead claim** — evidence; capability claim first; no quotes >15 words"
+      - name: "Weaknesses / watch-outs"
+        purpose: "4–6 bullets; bolded lead weakness — contradicting evidence"
+        max_items: 6
+        eligible_tiers: [tier_1, tier_2]
+        scope_gated_by: "Core products"
+        style: "**Lead weakness** — evidence; no essay paragraphs or multiple quotes"
+      - name: "hx positioning"
+        purpose: "2–3 STRUCTURAL claims about how hx approaches the same space differently from the competitor. This is framing, not a scorecard. BANS: (1) no repeats of Strengths/Weaknesses content — if the fact already lives as a weakness, do not restate it here; (2) no coverage-matrix phrasing (`zero coverage across N use cases`) — that is comparative evidence, either reword structurally or demote to Notes; (3) no reactions to single feature launches. See references/competitor-style-guide.md § hx positioning."
+        max_items: 3
+        eligible_tiers: [tier_1]
+        scope_gated_by: "Core products"
+        style: "structural framing of hx's approach; no coverage-matrix evidence; no restatement of Strengths/Weaknesses; no feature-launch reactions"
+      - name: "Talk track"
+        purpose: "1–3 one-line seller quotes"
+        max_items: 3
+        required: false
+        eligible_tiers: [tier_1]
+        scope_gated_by: "Core products"
+        style: "one-line quote a seller could say; no customer names or long explanations"
+      - name: "Notes / open questions"
+        purpose: "catch-all for niche / unverified / lower-tier findings"
+        max_items: 5
+        eligible_tiers: [tier_1, tier_2, tier_3, tier_5]
+
+  messaging:
+    label: "Product & Segment Messaging"
+    codeowner: "product-segment-messaging"
+    active: true
+    canon:
+      - truth/messaging/**
+    raw: raw/messaging/
+    notion_data_source_id: "e9686030-eff9-4036-a8a5-584d95ea8b24"
+
+  audiences:
+    label: "Audiences & Personas"
+    codeowner: "audiences-personas"
+    active: true
+    canon:
+      - truth/audiences/**
+      - truth/market/icp.md
+      - truth/market/segments.md
+      - marketing/persona-guides/**
+    raw: raw/audiences/
+    notion_data_source_id: "8d3c3427-a63a-4b30-966c-3e0dcc595453"
+
+  company-policies:
+    label: "Company Policies & Platform Commitments"
+    codeowner: "company-policies-platform-commitments"
+    active: true
+    canon:
+      - truth/company/policies.md
+    raw: raw/company-policies/
+    notion_data_source_id: "f4af2d4a-c486-4250-ba25-d9d52ca421a3"
+
+  company-overview:
+    label: "Company Overview & Narrative"
+    codeowner: "company-overview-narrative"
+    active: true
+    canon:
+      - truth/company/product.md
+      - truth/product-marketing-context.md
+      - marketing/truth/messaging/narratives.md
+    raw: raw/company-overview/
+    notion_data_source_id: "c9994a1f-9918-46a5-b679-f42a2a5f1458"
+
+  marketing-strategy:
+    label: "Marketing Strategy"
+    codeowner: "marketing-strategy"
+    active: true
+    canon:
+      - marketing/marketing-strategy.md
+    raw: raw/marketing-strategy/
+    notion_data_source_id: "9d59ccd5-708f-401e-824e-87996a002c64"
+
+  brand-voice:
+    label: "Brand, Voice & Positioning"
+    codeowner: "brand-voice-positioning"
+    active: true
+    canon:
+      - truth/brand/**
+      - marketing/truth/brand/**
+      - marketing/guidance/social/voice-guides/**
+    raw: raw/brand-voice/
+    notion_data_source_id: "48b263d4-2332-4f75-b941-0638260d1864"
+
+  channel-playbooks:
+    label: "Channel Playbooks"
+    codeowner: "channel-playbooks"
+    active: true
+    canon:
+      - marketing/guidance/ads/**
+      - marketing/guidance/blog/**
+      - marketing/guidance/email/**
+      - marketing/guidance/social/**
+      - marketing/guidance/web/**
+      - marketing/guidance/press-release/**
+      - marketing/guidance/workflows/**
+      - marketing/guidance/editor/qa_checklist.md
+      - guidance/anti-ai-guardrails.md
+    raw: raw/channel-playbooks/
+    notion_data_source_id: "3a2a2b8a-87c6-47c1-ba06-4681906ded24"
+
+  sales-methodology:
+    label: "Sales Methodology"
+    codeowner: "sales-methodology"
+    active: true
+    canon:
+      - sales/methodology/**
+    raw: raw/sales-methodology/
+    notion_data_source_id: "a1034ab6-e116-44ed-b5b4-6a22c419d89d"
+
+  accounts:
+    label: "Account & Opp-level Context"
+    codeowner: "account-opp-context"
+    active: true
+    canon:
+      - accounts/**
+    raw: raw/accounts/
+    notion_data_source_id: "b92a8f04-2b22-4d75-bbbc-d8c1e0bcf39e"
+
+  rfp:
+    label: "RFP Responses"
+    codeowner: "rfp-responses"
+    active: true
+    canon: []
+    raw: raw/rfp/
+    notion_data_source_id: "195da5e7-a248-4df3-ab29-7cd1bf1bfc9c"

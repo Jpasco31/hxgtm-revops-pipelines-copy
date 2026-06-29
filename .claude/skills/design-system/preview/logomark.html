@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>hx logomark</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: #FFFFFF;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 48px 64px;
+    gap: 40px;
+    box-sizing: border-box;
+  }
+  header { display: flex; justify-content: space-between; align-items: baseline; }
+  .label { font: 500 11px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-60, #4A5566); }
+  .meta  { font: 400 11px/1.5 var(--font-mono); color: var(--color-ink-40, #848D9A); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    align-content: center;
+  }
+  .swatch {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .swatch .tile {
+    aspect-ratio: 4 / 3;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .swatch .tile img { width: 64%; height: auto; display: block; }
+  .swatch .caption { font: 500 10px/1.4 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-60, #4A5566); }
+  .swatch .caption span { display: block; color: var(--color-ink-40, #848D9A); text-transform: none; letter-spacing: 0; font-weight: 400; margin-top: 2px; }
+
+  /* Tile variations — each sets the logomark's two colors via filter or via color */
+  .t-ink     { background: #FFFFFF; }
+  .t-paper   { background: var(--color-paper, #F5F2EC); }
+  .t-ink-bg  { background: var(--color-ink, #111923); }
+  .t-wine    { background: var(--color-wine-700, #5A1530); }
+  .t-indigo  { background: var(--color-indigo-500, #5B5BD6); }
+  .t-lime    { background: var(--color-lime-400, #C6F23F); }
+  .t-tangerine { background: var(--color-tangerine-500, #F2622E); }
+  .t-mist    { background: var(--color-mist, #E5E7EB); }
+
+  /* When tile is dark, invert the mark so both halves render legibly (left = light, right = light tinted) */
+  .invert img { filter: invert(100%); }
+</style>
+</head>
+<body>
+  <header>
+    <div class="label">Logomark · monogram "hx"</div>
+    <div class="meta">Two-glyph mark · left h = primary, right h = accent</div>
+  </header>
+
+  <section class="grid">
+    <div class="swatch">
+      <div class="tile t-ink"><img src="../assets/logo/hx-logomark.svg" alt=""></div>
+      <div class="caption">Primary<span>ink on white</span></div>
+    </div>
+    <div class="swatch">
+      <div class="tile t-paper"><img src="../assets/logo/hx-logomark.svg" alt=""></div>
+      <div class="caption">On paper<span>ink on warm neutral</span></div>
+    </div>
+    <div class="swatch">
+      <div class="tile t-mist"><img src="../assets/logo/hx-logomark.svg" alt=""></div>
+      <div class="caption">On mist<span>ink on cool neutral</span></div>
+    </div>
+    <div class="swatch">
+      <div class="tile t-lime"><img src="../assets/logo/hx-logomark.svg" alt=""></div>
+      <div class="caption">On lime<span>ink on accent</span></div>
+    </div>
+
+    <div class="swatch">
+      <div class="tile t-ink-bg invert"><img src="../assets/logo/hx-logomark.svg" alt=""></div>
+      <div class="caption">Reverse<span>white on ink</span></div>
+    </div>
+    <div class="swatch">
+      <div class="tile t-wine invert"><img src="../assets/logo/hx-logomark.svg" alt=""></div>
+      <div class="caption">On wine<span>white on heritage</span></div>
+    </div>
+    <div class="swatch">
+      <div class="tile t-indigo invert"><img src="../assets/logo/hx-logomark.svg" alt=""></div>
+      <div class="caption">On indigo<span>white on accent</span></div>
+    </div>
+    <div class="swatch">
+      <div class="tile t-tangerine invert"><img src="../assets/logo/hx-logomark.svg" alt=""></div>
+      <div class="caption">On tangerine<span>white on accent</span></div>
+    </div>
+  </section>
+
+  <footer style="display:flex;justify-content:space-between;align-items:baseline">
+    <div class="meta">Both halves use currentColor; right "h" can be overridden via --logomark-accent on inline SVG.</div>
+    <div class="meta">Min size: 24px tall (digital), 8mm tall (print).</div>
+  </footer>
+</body>
+</html>

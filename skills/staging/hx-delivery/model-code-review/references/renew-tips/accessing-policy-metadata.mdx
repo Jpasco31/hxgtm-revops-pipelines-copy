@@ -1,0 +1,119 @@
+---
+title: "Accessing Policy Metadata"
+---
+
+## Introduction
+
+When connecting to external systems, that system may have several environments available such as a Production or UAT environment.
+A Policy Admin System, for example, may go through several stages of development before being released to underwriters in production.
+
+hx Renew allows users to create both test Policies (allowing users to test models before moving them into production) and live Policies (for real pricing cases).
+The environment you wish to connect to may depend on the phase of model development you are in and what type the Policy is - test or live. 
+
+When the hx Renew model is published and Policies are live, you will want that Policy to fetch data from your production environment. 
+Whereas if the model is out for testing, you may wish to connect to the UAT environment instead.
+
+The following article shows:
+- Accessing the Policy ID from the [metadata](/platform/developer/building-your-model/algorithms/accessing-policy-metadata) - high level information about the Policy itself
+- How to access the type of the Policy (Live or Test) via hx Renew's REST API
+- Logic to use appropriate secrets and URLs based on the type:
+    - Pointing at the production environment if the Policy is "LIVE"
+    - Pointing at the UAT environment if the Policy is "TEST"
+    - Pointing at a development / QA environment if the model is still in development ("DEV")
+
+_Note: if the model is still in development, the policy_id from the metadata will return as 0. 
+In the following code snippets, if the policy_id is 0, hx Renew's REST API are not called and 
+the Policy type is set automatically to "DEV", indicating the model is still in development._
+
+
+## Accessing the Policy Type
+
+The following code snippet provides a function which returns the type of the Policy as either "LIVE", "TEST" or "DEV".
+This function can be called before setting your credentials and performing your request.
+
+This function also sets the fetch status of the response. 
+Therefore, a string variable `fetch_status` is required in the data schema.
+
+The following code snippet will require you to generate access credentials for hx Renew's REST API. More information on how to do this can be found [here](../../platform/admin/it-documentation/api-keys).
+We recommend storing these credentials in hx Renew secrets which can be created via the secrets screen in the developer portal. For more information on creating and using secrets, please see our documentation on [Managing Model Secrets](/platform/developer/model-development-process/models/managing-model-secrets).
+
+_Note: The URL in the following snippet will need to be updated to include your hx Renew environment_
+
+```python
+import hx
+
+import requests
+import json
+from requests.auth import HTTPBasicAuth
+
+def get_policy_type(hxd):
+    # Get Policy ID from Policy metadata
+    policy_id = str(hx.meta.policy_id)
+
+    # If our model is in editing mode, the Policy ID will equal 0
+    # If this is the case, type is returned as DEV and REST API do not need to be called
+    if policy_id == 0:
+        return "DEV"
+    else:
+        # URL - needs to be updated to your environment
+        URL = 'https://api.YOURENVIRONMENT.hxrenew.com/api/v1/policies/{}'.format(policy_id)
+
+        user = hx.secrets.rest_api_user # Secret containing username to REST API 
+        password = hx.secrets.rest_api_password # Secret containing password to REST API 
+
+        # Connect to REST API
+        try:
+            response = requests.get(url=URL, auth=HTTPBasicAuth(user, password))
+        except requests.RequestException:
+            hxd.fetch_status = "Unable to connect to Renew's Rest API"
+            return
+
+        # Check we got status code 200 (OK)
+        if response.status_code != 200:
+            if response.status_code == 404:
+                hxd.fetch_status = "Renew Rest API: Data not found"
+            elif response.status_code == 400:
+                hxd.fetch_status = "Renew Rest API: Bad Request"
+            else:
+                hxd.fetch_status = "Failed - unexpected response from server (status code: " + str(response.status_code) + ")"
+            return
+        
+        results = response.json()
+
+        # From the results, return the Policy type - "LIVE" or "TEST"
+        return results["risk"]["type"]
+
+```
+
+## Setting the credentials
+
+The following code snippet provides logic to set the credentials used based on the Policy type returned after calling the function above.
+This can be used inside `tasks.py` to access correct environment.
+
+```python
+@hx.task
+def external_api(hxd, progress):
+    
+    # Get Policy type - "DEV", "TEST" or "LIVE"
+    policy_type = get_policy_type(hxd)
+    
+    if policy_type == "LIVE":
+        API_KEY = hx.secrets.live_key # Secret containing key to production environment
+        URL = "https://PRODUCTION-ENVIRONMENT.io/api" # PRODUCTION API URL
+    elif policy_type == "TEST":
+        API_KEY = hx.secrets.uat_key # Secret containing key to UAT environment
+        URL = "https://UAT-ENVIRONMENT.io/api/hx/" # UAT API URL
+    else:
+        API_KEY = hx.secrets.dev_key # Secret containing key to DEV environment
+        URL = "https://DEV-ENVIRONMENT.io/api/hx/" # DEV API URL
+
+    # Call to external API 
+    headers = {'x-api-key': API_KEY}
+
+    try:
+        response = requests.get(url=URL, headers=headers)
+    except requests.RequestException:
+        hxd.fetch_status = "Unable to connect to API"
+        return
+
+```

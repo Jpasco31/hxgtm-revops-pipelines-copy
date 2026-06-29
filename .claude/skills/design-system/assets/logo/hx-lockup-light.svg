@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1640 320" fill="#FFFFFF">
+  
+  <g transform="translate(0,40) scale(1.18)">
+    <path d="M97.74 187.033 L97.74 0 L75.501 0 C75.501 44.925 42.049 71.879 0 76.647 L0 100.851 C31.583 96.817 71.203 89.666 71.203 49.142 L75.688 49.142 L74.753 187.033 L97.74 187.033 Z"></path>
+    <path d="M109.888 187.033 L132.875 187.033 L132.127 49.142 L136.612 49.142 C136.612 89.666 176.232 96.817 207.815 100.851 L207.815 76.647 C165.766 71.879 132.127 44.925 132.127 0 L109.888 0 L109.888 187.033 Z"></path>
+  </g>
+  
+  <text x="295" y="265" font-family="Familjen Grotesk, FFF Acid Grotesk, sans-serif" font-weight="500" font-size="260" letter-spacing="-7">hyperexponential</text>
+</svg>

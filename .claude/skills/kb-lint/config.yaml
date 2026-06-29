@@ -1,0 +1,143 @@
+# kb-lint scope configuration
+#
+# This file is the single source of truth for which slices of the canonical
+# knowledge base kb-lint will scan. Each entry defines:
+#
+#   label      — human-readable name (shown in reports)
+#   codeowner  — team responsible for this slice
+#   active     — informational: records whether a group is considered
+#                ready. kb-lint does NOT gate on it (it runs against any
+#                group); /kb-update may still consult it.
+#   canon      — canon paths (relative to the MCP server's context/
+#                root) that belong to this group. Globs (**) are
+#                supported.
+#
+# kb-lint audits canon only — it does NOT scan the raw staging area or
+# touch raw/<group>/INDEX.md. Raw sources are owned by the sibling skill
+# /kb-update (its config, including the per-group `raw:` staging paths,
+# lives at .claude/skills/kb-update/config.yaml). Keep the `canon` globs
+# here in sync with the matching groups in
+# .claude/skills/kb-update/config.yaml.
+#
+# kb-lint produces a markdown report at
+# outputs/kb-lint-<group>-YYYY-MM-DD.md and does not publish to Notion.
+#
+# Activating a new group: flip `active: false` → `active: true` here and
+# verify kb-lint runs with `/kb-lint --group <slug>`.
+#
+# all_mode — configuration for a whole-canon scan (`/kb-lint` with no
+# `--group`). All-mode enumerates EVERY .md under context/ by file walk
+# (not by unioning the group globs below — that would miss canon files no
+# group claims) PLUS the project meta docs listed in `extra_globs`, then
+# shards the content across parallel Canon Analyzer subagents.
+
+all_mode:
+  # Project meta docs to include alongside context/**. Paths are relative
+  # to the hxgtm-mcp-server REPO ROOT (the parent of context/), and are
+  # read from the filesystem only — the hxgtm-context MCP server serves
+  # context:// resources, not these. CLAUDE.md is a symlink to AGENTS.md;
+  # dedupe by realpath so it is not scanned twice.
+  extra_globs:
+    - README.md
+    - AGENTS.md
+    - docs/**
+  # Size-aware shard packing. Bin-pack in-scope files into shards capped at
+  # BOTH limits; never split a single file across shards. Large groups
+  # (esp. accounts/) split across multiple shards; small dirs combine.
+  shard_max_files: 25
+  shard_max_bytes: 120000   # ~30K tokens of content; leaves headroom for the index + output
+  # Concurrent Canon Analyzer subagents per wave (parallel-wave pattern).
+  wave_size: 5
+
+groups:
+  competitive:
+    label: "Competitive Intelligence"
+    codeowner: "competitive-intelligence"
+    active: true
+    canon:
+      - guidance/competitive/**
+      - truth/market/competitors.md
+
+  messaging:
+    label: "Product & Segment Messaging"
+    codeowner: "product-segment-messaging"
+    active: true
+    canon:
+      - truth/messaging/**
+
+  audiences:
+    label: "Audiences & Personas"
+    codeowner: "audiences-personas"
+    active: true
+    canon:
+      - truth/audiences/**
+      - truth/market/icp.md
+      - truth/market/segments.md
+      - marketing/persona-guides/**
+
+  company-policies:
+    label: "Company Policies & Platform Commitments"
+    codeowner: "company-policies-platform-commitments"
+    active: true
+    canon:
+      - truth/company/policies.md
+
+  company-overview:
+    label: "Company Overview & Narrative"
+    codeowner: "company-overview-narrative"
+    active: true
+    canon:
+      - truth/company/product.md
+      - truth/product-marketing-context.md
+      - marketing/truth/messaging/narratives.md
+
+  marketing-strategy:
+    label: "Marketing Strategy"
+    codeowner: "marketing-strategy"
+    active: true
+    canon:
+      - marketing/marketing-strategy.md
+
+  brand-voice:
+    label: "Brand, Voice & Positioning"
+    codeowner: "brand-voice-positioning"
+    active: true
+    canon:
+      - truth/brand/**
+      - marketing/truth/brand/**
+      - marketing/guidance/social/voice-guides/**
+
+  channel-playbooks:
+    label: "Channel Playbooks"
+    codeowner: "channel-playbooks"
+    active: true
+    canon:
+      - marketing/guidance/ads/**
+      - marketing/guidance/blog/**
+      - marketing/guidance/email/**
+      - marketing/guidance/social/**
+      - marketing/guidance/web/**
+      - marketing/guidance/press-release/**
+      - marketing/guidance/workflows/**
+      - marketing/guidance/editor/qa_checklist.md
+      - guidance/anti-ai-guardrails.md
+
+  sales-methodology:
+    label: "Sales Methodology"
+    codeowner: "sales-methodology"
+    active: true
+    canon:
+      - sales/methodology/**
+
+  accounts:
+    label: "Account & Opp-level Context"
+    codeowner: "account-opp-context"
+    active: true
+    canon:
+      - accounts/**
+
+  rfp:
+    label: "RFP Responses"
+    codeowner: "rfp-responses"
+    active: true
+    canon: []

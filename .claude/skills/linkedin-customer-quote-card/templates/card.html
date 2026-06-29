@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customer Quote Card</title>
+  <style>
+    {{FONT_FACE_BLOCK}}
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      background: #101820;
+      display: grid;
+      place-items: center;
+      font-family: "FFF Acid Grotesk", Arial, sans-serif;
+    }
+
+    .card {
+      --bg: #1d2733;
+      --accent: #a6c4ee;
+      --avatar-bg: #0f1924;
+      --quote-size: 48px;
+      --quote-line-height: 1.1;
+      position: relative;
+      width: 1080px;
+      height: 1080px;
+      overflow: hidden;
+      background: var(--bg) var(--bg-image) center / cover no-repeat;
+      color: #ffffff;
+      isolation: isolate;
+    }
+
+    .theme-blue {
+      --bg: #1d2733;
+      --accent: #a6c4ee;
+      --avatar-bg: #0f1924;
+    }
+
+    .theme-burgundy {
+      --bg: #400a20;
+      --accent: #eea6c4;
+      --avatar-bg: #330817;
+    }
+
+    .theme-green {
+      --bg: #013f3c;
+      --accent: #59bbb7;
+      --avatar-bg: #002625;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 100%;
+      height: 100%;
+      padding: 80px;
+      gap: 80px;
+    }
+
+    .top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 120px;
+      flex: 1 1 auto;
+    }
+
+    .quote {
+      flex: 1 1 auto;
+      min-width: 0;
+      margin: 0;
+      color: var(--Neutrals-50, #FFF);
+      font-family: "FFF Acid Grotesk", Arial, sans-serif;
+      font-size: var(--quote-size);
+      font-style: normal;
+      font-weight: 350;
+      line-height: var(--quote-line-height);
+      letter-spacing: 0;
+    }
+
+    .quote .accent {
+      color: var(--accent);
+    }
+
+    .mark {
+      width: 63px;
+      height: auto;
+      flex: 0 0 auto;
+      color: #ffffff;
+      opacity: 0.98;
+    }
+
+    .bottom-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 32px;
+      flex: 0 0 auto;
+    }
+
+    .avatar-frame {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      border-radius: 8.5125px;
+      overflow: hidden;
+      background: var(--avatar-bg);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      flex: 0 0 auto;
+    }
+
+    .avatar-frame::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.18;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+      z-index: 2;
+    }
+
+    .avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% var(--avatar-y, 18%);
+      transform: scale(1.01);
+      display: block;
+    }
+
+    .meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 36px;
+      line-height: 1.2;
+      font-weight: 350;
+    }
+
+    .name {
+      margin: 0;
+      color: #ffffff;
+    }
+
+    .title {
+      margin: 0;
+      color: #ffffff;
+    }
+
+    .company {
+      margin: 0;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <main class="card theme-{{PATTERN_TYPE}}" style="--bg-image: url('{{BG_IMAGE_DATA_URI}}');">
+    <section class="content">
+      <div class="top-row">
+        <p class="quote">{{QUOTE_HTML}}</p>
+        <svg class="mark" viewBox="330 603 209 188" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-label="hx logomark">
+          <path d="M428.868 790.69V603.657H406.629C406.629 648.582 373.177 675.536 331.128 680.304V704.508C362.712 700.474 402.331 693.323 402.331 652.799H406.816L405.882 790.69H428.868Z"/>
+          <path d="M441.016 790.69H464.003L463.255 652.799H467.74C467.74 693.323 507.36 700.474 538.943 704.508V680.304C496.894 675.536 463.255 648.582 463.255 603.657H441.016V790.69Z"/>
+        </svg>
+      </div>
+      <div class="bottom-row">
+        <div class="avatar-frame">
+          <img class="avatar" src="{{AVATAR_SRC}}" alt="{{CUSTOMER_NAME}}">
+        </div>
+        <div class="meta">
+          <p class="name">{{CUSTOMER_NAME}}</p>
+          <p class="title">{{CUSTOMER_TITLE}}</p>
+          <p class="company">{{COMPANY_NAME}}</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

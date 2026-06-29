@@ -1,0 +1,147 @@
+---
+title: "Dynamic props"
+---
+
+In this chapter you will learn how to use **dynamic props** which allow labels and info text to be set dynamically based on a value of a **str** node.
+
+You will update the label of `base_prem` and the info text of `charged_prem` (in layers) to include the selected currency as shown in the examples below:
+
+<img src={require("../assets/dynamic_base_prem.png").default} width="800" />
+<img src={require("../assets/dynamic_charged_prem.png").default} width="800" />
+
+---
+
+## :floppy_disk: Model Files
+
+| The model files required for this chapter can be downloaded [here](../assets/day_2_main.zip). |
+| --------------------------------------------------------------------------------------------- |
+
+---
+
+## Objectives
+
+- Add new fields to the data schema
+- Set the text for the dynamic props in `rating.py`, using f-strings
+- Update the **view** to use the dynamic props
+
+---
+
+## Updating the data schema
+
+The first step is to create two additional items in your data schema, `base_prem_label` and `charged_prem_info`. These new **string** nodes should be set to **output** and will contain the text to be displayed. The text will be set by the rating algorithm.
+
+<details>
+
+<summary>Click to view the solution for this.</summary>
+
+```python
+"base_prem_label": hx.Str(mode="output"),
+"charged_prem_info": hx.Str(mode="output"),
+```
+
+</details>
+
+---
+
+## Updating the rating algorithm
+
+Next, `rating.py` needs to be updated to dynamically set the value of the `base_prem_label` and `charged_prem_info` based on the value of the **currency** node.
+
+When the user selects a new currency from the dropdown, the rating algorithm will automatically recalculate and update the text we want to display.
+
+This can be achieved using the code below.
+
+```python
+# Set dynamic props
+hxd.base_prem_label = f"Base Prem - {hxd.currency}" # Produce label i.e. Base Prem - USD
+hxd.charged_prem_info = f"This premium is in {hxd.currency}" # Produce info text i.e. This premium is in USD
+```
+
+> **Note:** The labels are formatted using f-strings, to learn more about f-strings [click here](https://mkaz.blog/code/python-string-format-cookbook/)
+
+---
+
+## Updating the view
+
+Currently the labels are being dynamically generated but are not yet visible. Next `view.js` needs to be updated in order to display them on the model's frontend. There are two parts to this as outlined below.
+
+---
+
+### Base premium
+
+The `base_prem` node is currently being displayed in a collection with the title **"Base Premium Calculations"**.
+
+An additional prop `labelBy` needs to be added inside the fields list, which points to the node containing the dynamic label. To do this, use the following syntax:
+
+`{field: <data schema node>, labelBy: <data schema node>}`
+
+Therefore the new collection becomes:
+
+```javascript
+<HX.Collection
+  fields={[
+    { field: "base_premium", labelBy: "base_prem_label" },
+    "total_adjustments",
+    "technical_prem",
+  ]}
+  title="Base Premium Calculations"
+  horizontal
+/>
+```
+
+---
+
+### Charged premium
+
+A similar approach is needed for the `charged_prem` node. However, this time you need to use `infoBy` rather than `labelBy`. This will display the text when you hover over an 'info' symbol rather than as a label inside the field.
+
+`charged_prem` is currently being displayed in the **"Layer Premium Calculations"** table.
+
+Add the required prop and check the solution below if you need to.
+
+<details>
+
+<summary>Click here for the solution.</summary>
+
+```javascript
+<HX.Table
+  data={["layers", null, "layer_totals"]}
+  fields={[
+    "ilf",
+    "ded_credit",
+    "calculated_prem",
+    { field: "charged_prem", infoBy: "charged_prem_info" },
+    "ulr",
+    "selected",
+  ]}
+  title="Layer Premium Calculations"
+/>
+```
+
+</details>
+
+---
+
+The selected currency will be displayed in the label and info text for the `base_prem` and `charged_prem` fields respectively. If you select a different currency from the dropdown, they will update automatically.
+
+Load the example data into your model and test that it works.
+
+<img src={require("../assets/dynamic_props.gif").default} width="800" />
+
+---
+
+## Feedback
+
+We would really appreciate any feedback that you have about this chapter. All feedback is anonymous, however if you would like us to contact you, please include your e-mail address.
+
+<iframe
+  src="https://aqj5uz28dk1.typeform.com/to/tY9xS7ri"
+  width="100%"
+  height="450px"
+></iframe>
+
+---
+
+## Next steps
+
+In the next chapter you will learn how to create linked dropdowns.

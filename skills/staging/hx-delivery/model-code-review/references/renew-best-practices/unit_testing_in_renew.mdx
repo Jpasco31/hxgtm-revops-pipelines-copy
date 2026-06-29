@@ -1,0 +1,278 @@
+---
+title: "Unit Testing in hx Renew"
+---
+
+## Introduction
+
+Unit testing is an important practice in model development that ensures the quality and reliability of code. It involves testing individual components or functions of a program to verify if they are working as expected. In this article, we will discuss the importance of unit testing briefly and how it can be implemented within hx Renew.
+
+The example files can be downloaded by clicking [here.](../assets/unit_testing_model_files.zip)
+
+### Importance of Unit Testing
+
+Unit testing is a important aspect of software and model development for several reasons:
+
+1. **Bug Detection**: Unit testing helps in early detection of bugs and errors in the code, allowing developers to fix them before they become critical issues in the production environment.
+
+2. **Code Reliability**: Unit tests provide confidence that individual components or functions of the code are working correctly, ensuring the overall reliability of the software.
+
+3. **Code Maintenance**: Unit tests act as documentation for the behaviour of individual components, making it easier to understand and maintain the codebase, especially in large projects or when multiple developers are working on the same code.
+
+4. **Regression Testing**: Unit tests serve as a safety net during code changes or refactoring, ensuring that existing functionalities are not broken unintentionally.
+
+For further details regarding best practices for unit testing and other related information, feel free to explore resources available online, such as searching for Test-Driven Development (TDD) or unit testing best practices.
+
+## Implementation & Examples of Unit Testing in hx Renew
+
+In hx Renew, we have implemented unit testing as part of our model development process to strengthen the quality and reliability of our model builds. In the first example below we have used the `unittest` framework but there are other suitable unit testing frameworks such as `pytest` which can also be used and is shown in the second example.
+
+Let's take a look at an example of how we implement unit testing in hx Renew. Consider the following rating functions:
+
+```python
+
+def total_adjustments(hxd):
+    hxd.total_adjustments = ((1 + hxd.coverage.adjustment) *
+                             (1 + hxd.territory.adjustment) *
+                             (1 + hxd.loss_history.adjustment) *
+                             (1 + hxd.exposure.adjustment) - 1)
+
+def area_per_cap(hxd):
+    total_population = sum([country.population for country in hxd.countries])
+    total_area = sum([country.area for country in hxd.countries])
+
+    if total_population != 0:
+        hxd.area_per_cap = total_area / total_population
+    else:
+        hxd.area_per_cap = None
+
+```
+
+### Example 1 - `unittest`
+
+The methodology behind this is that we are mocking up the hxd and setting up the required parts of the data schema for the test as required. Please note that the complete model files will have more tests than shown below.
+
+```python
+
+from algorithms.rating_functions import base_premium, technical_premium, total_adjustments, area_per_cap
+from unittest.mock import MagicMock
+from algorithms.tests.utils import convert_hxd_to_dotdict
+import unittest
+
+class hxdTestCase(unittest.TestCase):
+
+    def setUp(self):
+        # Create a MagicMock object for hxd_like_object
+        self.hxd_mock = MagicMock()
+
+    def test_calculates_total_adjustments_correctly(self):
+        # Initialise input values to check
+        self.hxd_mock.exposure.adjustment = 0.5
+        self.hxd_mock.loss_history.adjustment = 0
+        self.hxd_mock.coverage.adjustment = 0
+        self.hxd_mock.territory.adjustment = -0.2
+        self.hxd_mock.technical_premium = None
+
+        # Call the function with the mock object
+        total_adjustments(self.hxd_mock)
+
+        # Assert that the total adjustments was set correctly
+        self.assertAlmostEqual(self.hxd_mock.total_adjustments, 0.2)
+
+    def test_calculates_area_per_cap_dot_dict(self):
+
+        list_of_dicts = [{"population": 1, "area":3},
+                         {"population": 2, "area":6},
+                         {"population": 3, "area":9},
+                         {"population": 4, "area":12}]
+
+        self.hxd_mock = convert_hxd_to_dotdict({"countries":list_of_dicts})
+        area_per_cap(self.hxd_mock)
+        self.assertAlmostEqual(self.hxd_mock.area_per_cap, 3)
+
+
+if __name__ == '__main__':
+    runner = unittest.main()
+
+```
+
+### Example 2 - `pytest`
+
+```python
+from algorithms.rating_functions import base_premium, technical_premium, total_adjustments, area_per_cap
+from unittest.mock import MagicMock
+from algorithms.tests.utils import convert_hxd_to_dotdict
+import pytest
+
+class Tests:
+
+    @pytest.fixture
+    def hxd_mock(self):
+        return MagicMock()
+
+    def test_calculates_base_premium_correctly(self, hxd_mock):
+        hxd_mock.exposure.value = 1e6
+        hxd_mock.model_base_rate.selected = 0.1
+        hxd_mock.base_premium = None
+
+        # Call the function with the mock object
+        base_premium(hxd_mock)
+
+        # Assert that the base_premium attribute was set correctly
+        assert pytest.approx(hxd_mock.base_premium) == 1e5
+```
+
+### What does the above achieve?
+
+In the simple first test example above, we are testing whether our function `total_adjustments` correctly calculates the total adjustments, given four specific adjustment inputs.
+
+The helper functions used are defined below and can be found in the `utils.py` script:
+
+```python
+
+from copy import deepcopy
+import datetime
+
+class DotDict(dict):
+    """dot.notation access to dictionary attributes"""
+    def __getattr__(*args):
+        val = dict.get(*args)
+        return DotDict(val) if isinstance(val, dict) else val
+
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+    def __deepcopy__(self, memo=None):
+        return DotDict(deepcopy(dict(self), memo=memo))
+
+
+def convert_hxd_to_dotdict(hxd_dict):
+    """
+    Converts entire hxd to dotdict
+    """
+
+    hxd_dict = DotDict(hxd_dict)
+
+    for key in hxd_dict:
+        # If standalone field then pass as already in the correct form
+        if isinstance(hxd_dict[key], (str, float, int, bool, datetime.date, type(None))):
+            pass
+        else:
+            try:
+                # Check if list - if indexing fails will skip to except line and treated as structure
+                list_check = hxd_dict[key][0]
+
+                # Create list of dictionaries for list fields
+                new_list = []
+                for element in hxd_dict[key]:
+                    new_dict = DotDict(element)
+                    new_list.append(new_dict)
+                    convert_hxd_to_dotdict(new_dict)
+
+                hxd_dict[key] = new_list
+            # Convert structures to dictionaries
+            except:
+                if hasattr(hxd_dict[key], "selected"):
+                    hxd_dict[key] = DotDict({"selected": hxd_dict[key].selected,
+                                             "calculated": hxd_dict[key].calculated})
+                else:
+                    new_dict = DotDict(hxd_dict[key])
+                    hxd_dict[key] = new_dict
+                    convert_hxd_to_dotdict(new_dict)
+
+    return hxd_dict
+
+```
+
+## How do we run our Unit Tests?
+
+### Example 1 - `unittest`
+
+Within your IDE you should be able to see a similar file structure in your environment as in the below:
+
+- editing
+  - algorithms
+    - `rating.py`
+    - `rating_functions.py`
+    - `tasks.py`
+    - tests
+      - `rating_functions_test.py`
+      - `utils.py`
+
+Once you have populated your desired tests in the `rating_functions_test.py` similar to the above, they can be run using the green arrow in the top right hand corner.
+
+If the test have all passed successfully you should see something like the below:
+
+```
+/algorithms/tests/rating_functions_test.py
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.002s
+
+OK
+developer@ip-10-129-74-115 /workspace %
+
+```
+
+Otherwise, if a test fails, you will see the below terminal output giving a description of the number of tests and the test names that have failed:
+
+```
+======================================================================
+FAIL: test_calculates_area_per_cap_dot_dict (__main__.hxdTestCase)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/algorithms/tests/rating_functions_test.py", line 83, in test_calculates_area_per_cap_dot_dict
+    self.assertAlmostEqual(hxd_mock.area_per_cap, 3.1)
+AssertionError: 3.0 != 3.1 within 7 places (0.10000000000000009 difference)
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.002s
+
+FAILED (failures=1)
+
+```
+
+### Example 2 - `pytest`
+
+#### Option 1
+
+1. Activate the terminal using `ctrl + shift + '`
+2. Using command `cd editing/algorithms/tests` navigate to your tests folder
+3. Run the command `python -m pytest`
+
+This will run all functions and scripts with the `test_` prefix.
+
+The output should look like the below:
+
+```
+developer@ip-10-0-56-236 /workspace/editing/algorithms/tests % python -m pytest
+============================================================================================== test session starts ===============================================================================================
+platform linux -- Python 3.9.16, pytest-7.1.2, pluggy-1.0.0
+rootdir: /workspace/editing/algorithms/tests
+plugins: typeguard-2.10.0
+collected 5 items
+
+test_other.py .                                                                                                                                                                                            [ 20%]
+test_rating_functions.py ....                                                                                                                                                                              [100%]
+
+=============================================================================================== 5 passed in 0.34s ================================================================================================
+```
+
+#### Option 2
+
+Alternatively, we have included a runner script in the completed model files above. Here you can the run tests using the green arrow at the top right.
+
+```python
+import pytest
+
+# Run all tests, anywhere in editing
+pytest.main(["/workspace/editing"])
+
+rf_args_str = "-k test_rating_functions"
+rf_args = rf_args_str.split(" ")
+pytest.main(rf_args)
+
+# To test policy, pass policy_args to pytest.main()
+other_args_str = "-k test_other"
+other_args = other_args_str.split(" ")
+pytest.main(other_args)
+```

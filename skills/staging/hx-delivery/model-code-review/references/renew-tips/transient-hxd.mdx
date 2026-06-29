@@ -1,0 +1,45 @@
+---
+title: "transient_hxd Module"
+---
+
+## What is transient_hxd?
+
+The transient_hxd is a module that allows you to create a Python object that acts like a “copy” of the hxd. This transient_hxd object can be passed to any function that normally accepts the hxd, and be expected to behave in exactly the same manner as the regular hxd.
+
+The name "transient" refers to the fact that the hxd-like object and all the data in it only exists while the python object exists, and is discarded when the object falls out of the name space. No results are saved to the regular hxd.
+
+This enables a variety of actions, including but not limited to:
+- **Rate Change** calculated by sequentially modifying inputs from the expiring policy
+- **Debugging** multiple async tasks/complex user journeys by manually specifying the user actions as modifications to the transient_hxd object
+- **Unit Testing** specific functions by comparing a transient_hxd object loaded with a before and after state
+
+## How do I use transient_hxd in my model?
+
+The file for the transient_hxd can be found here: [transient_hxd](../assets/transient_hxd.py).
+
+The recommended way to use this would be to import the files into a User Library and then import the transient_hxd from there. This way, if an update is required to the transient_hxd in future, just the Library can be updated to keep all models on a unified version.
+
+Each model using the transient_hxd will also need an up to date copy of the data_schema_static.py file from the data_schema folder to be saved somewhere in the algorithms folder. The default location for this is algorithms/data_schema_static.py but this can be changed by specifying a new location below. 
+
+In addition, if File nodes are required to be used with the transient_hxd, a location for these must also be provided. The default location is a folder named “transient_hxd_files” that will need to be created, otherwise a new folder must be specified. All files inside this folder must be named after the file node they correspond to.
+
+Once imported, to create a transient_hxd object in your model, use the init_transient_hxd() function. This function takes three inputs:
+- example_data: the data you want to load the transient_hxd with. This can either be a dictionary (such as the one that’s returned from the snapshots API, or saved in example_data.json) or a hxd structure node
+- data_schema_static_path: the path to your data_schema_static copy in algorithms. The default is “data_schema_static.py”
+- files_path: the path the folder in algorithms holding any file node files. The default is “transient_hxd_files”
+
+## Example Model
+
+An example model using the transient_hxd for rate change and debugging multiple tasks can be found here: [transient_hxd Example Model](../assets/transient_hxd-example-model.zip).
+
+## DummyProgress
+
+Included in the transient_hxd files is also a class called DummyProgress that can be used when running an async task with the transient_hxd that also expects a progress input. This variable does nothing except allow these functions to run without error, and can be used as below:
+
+```python
+async_task(transient_hxd, DummyProgress())
+```
+
+## Limitations
+
+The transient_hxd currently doesn't support Triangle nodes. They will not cause errors, but no values will be calculated when they are called. This will be coming in a future update.

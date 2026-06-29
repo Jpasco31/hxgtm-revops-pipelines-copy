@@ -1,0 +1,191 @@
+<!--
+  linkedin-single-image-ad scaffold - white left aligned (Figma 1482-53395)
+  Cream background, left-aligned ~100px two-line headline (line 2 muted gray),
+  dark "Schedule a demo" pill CTA, hero panel anchored bottom-right.
+  Placeholders:
+    FONT_FACE_BLOCK        - paste contents of
+                             .claude/skills/design-system/tokens/fonts-inline-card.css
+                             (3 base64-inlined @font-face rules)
+    {{HEADLINE_LINE_1}}    - first line of headline (rendered in dark #16212E)
+    {{HEADLINE_LINE_2}}    - second line of headline (rendered in muted #848D9A)
+                             Pass empty string to render a single line.
+    {{HERO_IMAGE_NODE}}    - <img src="hero/portfolio--white-left.png" alt=""> for the
+                             pre-cropped 720x520 asset, OR empty string
+    {{CTA_LABEL}}          - pill text. Default "Schedule a demo".
+    {{CTA_HREF}}           - anchor target. Default "#".
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LinkedIn single image ad - {{HEADLINE_LINE_1}}</title>
+<style>
+  {{FONT_FACE_BLOCK}}
+
+  :root {
+    --font: 'FFF Acid Grotesk', Arial, sans-serif;
+    --bg: #F5F5F5;
+    --fg-strong: #16212E;
+    --fg-muted: #848D9A;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0a;
+    font-family: var(--font);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    box-sizing: border-box;
+  }
+
+  .card {
+    position: relative;
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--fg-strong);
+    isolation: isolate;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .bg-base {
+    position: absolute; inset: 0;
+    background: var(--bg);
+    z-index: 0;
+  }
+
+  .hero {
+    position: absolute;
+    right: 60px;
+    bottom: 60px;
+    width: 720px;
+    height: 520px;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 30px 80px rgba(22, 33, 46, 0.18);
+    background: #FFFFFF;
+  }
+  .hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+  }
+
+  .content {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    padding: 60px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 60px;
+  }
+
+  .logo {
+    color: var(--fg-strong);
+  }
+  .logo svg {
+    height: 45px;
+    display: block;
+  }
+
+  .text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 40px;
+    max-width: 960px;
+  }
+
+  h1.headline {
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 100px;
+    font-style: normal;
+    line-height: 1.1;
+    margin: 0;
+    color: var(--fg-strong);
+    text-wrap: balance;
+  }
+  h1.headline .line-2 {
+    display: block;
+    color: var(--fg-muted);
+  }
+
+  .cta {
+    padding: 8px 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    border-radius: 44.135px;
+    border: 0.727px solid var(--fg-strong);
+    background: var(--fg-strong);
+    color: #FFFFFF;
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 32px;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .cta .cta-icon {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cta .cta-icon svg {
+    width: 27px;
+    height: 27px;
+    display: block;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="bg-base"></div>
+
+    <div class="hero">{{HERO_IMAGE_NODE}}</div>
+
+    <div class="content">
+      <div class="logo">
+        <svg viewBox="0 0 2600 320" xmlns="http://www.w3.org/2000/svg" aria-label="hyperexponential">
+          <g transform="translate(0,40) scale(1.18)" fill="currentColor">
+            <path d="M97.74 187.033 L97.74 0 L75.501 0 C75.501 44.925 42.049 71.879 0 76.647 L0 100.851 C31.583 96.817 71.203 89.666 71.203 49.142 L75.688 49.142 L74.753 187.033 L97.74 187.033 Z"/>
+            <path d="M109.888 187.033 L132.875 187.033 L132.127 49.142 L136.612 49.142 C136.612 89.666 176.232 96.817 207.815 100.851 L207.815 76.647 C165.766 71.879 132.127 44.925 132.127 0 L109.888 0 L109.888 187.033 Z"/>
+          </g>
+          <text x="295" y="265" font-family="FFF Acid Grotesk, Arial, sans-serif" font-size="260" letter-spacing="-8" font-weight="400" fill="currentColor">hyperexponential</text>
+        </svg>
+      </div>
+
+      <div class="text">
+        <h1 class="headline">
+          <span class="line-1">{{HEADLINE_LINE_1}}</span>
+          <span class="line-2">{{HEADLINE_LINE_2}}</span>
+        </h1>
+        <a class="cta" href="{{CTA_HREF}}">
+          <span class="cta-label">{{CTA_LABEL}}</span>
+          <span class="cta-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 12h14M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

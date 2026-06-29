@@ -1,0 +1,128 @@
+---
+title: "Linking hx Renew Records by API"
+---
+
+## Linking Model Data in hx Renew
+
+The example below is designed to support accessing expiring data in hx Renew to reduce re-keying at renewal and rate change calculations. By performing this exercise in an asynchronous task, this allows users to cater for model changes where structures and types may have changed or where lookup values may need to be manually updated before inclusion in the latest model.
+
+This is to support model developers in making changes to their models as often as needed and to adapt to their business and the prevailing market rather than the requirements of an IT project.
+
+We are still working with our clients and partners on developing best-in-breed rate change functionality and what they would like to see out-of-the-box but the approach provided here gives users all the tools to take control of this process themselves.
+
+### 1. Overview
+
+All data entered into any hx Renew model is natively available via REST APIs and any hx Renew model can easily call these APIs to access and process the message data. This allows users to extract the expiring data and do any transformations for the renewal in an Async task. The below lists out the updates needed to include a simple fetch to a single policy option ID. In the below, the policy option ID must be entered manually.
+
+If you are linking back to the expiring policy option for rate change reasons or transformation between model versions, you can directly access the policy option ID via the `hx.meta` object, so there is no need to input a policy Id. To do this, simply use the `hx.meta.expiring_policy_option_id` variable.
+
+### 2. Data Schema Changes
+
+You need to add your expiring policy ID and indicate that is an input for a task called `expiring_policy_fetch`.
+
+```python
+"expiring_policy_option_id": hx.Int(default=0, mode="input", async_input=["expiring_policy_fetch"], view={"label": "Expiring Policy Option"})
+```
+
+Any fields you need to specify as outputs from this task should also be updated to be shown as async outputs.
+
+### 3. View Changes
+
+Now you need to add your new data item and a button to your view to run the tasks. You will not need to enter the expiring policy option if the record has been renewed within your hx Renew instance as you can access this metadata via the `hx.meta` object.
+
+```jsx
+<HX.Section title="Expiring Policy Fetch">
+  <HX.Pane flow="right">
+    <HX.Collection fields={["expiring_policy_option_id"]} />
+    <HX.Button task="expiring_policy_fetch" title="Fetch Expiring Data" />
+  </HX.Pane>
+</HX.Section>
+```
+
+### 4. Whitelisting the API
+
+In order to access expiring data from the hx Renew API, you will need to whitelist the API.
+
+Instructions on how to whitelist within hx Renew can be found [here](../../platform/admin/it-documentation/host-whitelisting#overview).
+
+As an example, if the url of the API is `https://api.YOURENVIRONMENT.hxrenew.com/api/v1/policies/options/{hxd.expiring_policy_option_id}/snapshot`, you will need to whitelist it as `api.YOURENVIRONMENT.hxrenew.com` within the admin portal.
+
+### 5. Task
+
+Below is a full tasks.py file which calls hx Renew and brings back 2 fields from the specified record by using query paths (`"/total_vehicles/number"`, `"/technical_premium"`) and maps them into existing data items in the renewal record which have already been marked as async outputs (`hxd.expiring_number_of_vehicles.calculated` , `hxd.expiring_premium.calculated`).
+
+You will need to update these sections for your use case.
+
+_Note: the query paths are not mandatory but this cuts down the volume of data to be transacted and improves performance where there are large outputs._
+
+```python
+import hx
+import requests
+
+# Async task (triggered by clicking a button) to import data from an expiring policy option into the current policy for rate change and analysis of movement
+# To adapt the script see comments labelled USER TODO
+@hx.task
+def expiring_policy_fetch(hxd, progress):
+    # User must define the policy option id of the expiring policy
+    # USER TODO: Add an input field for the policy option id of the expiring policy to your data schema
+    # USER TODO: Set up secrets for both the username and password to access the REST API and call here
+    # Renew REST API require a username and password to use. Username and password can be securely stored in the model secrets to avoid hard coding and to allow them to be updated easily if needed.
+    # Set up secrets in the developer portal, on the secrets tab with the secret value as the username or password and the identifier with the variable name you wish to use in Python (this must be compatible with Python names, i.e. no spaces)
+    user = hx.secrets.rest_api_user
+    password = hx.secrets.rest_api_password
+
+    # URL for the API
+    url = f"https://api.YOURENVIRONMENT.hxrenew.com/api/v1/policies/options/{hxd.expiring_policy_option_id}/snapshot"
+
+    # USER TODO: Update paths list to contain the variables required. These must be in quotation marks, start with a / and match the variables used in the expiring policy DS exactly
+    # Parameters for this API call are the paths to the variables you wish to extract from the policy.
+    # You can include multiple variables like below
+    # Access children of structures in the same way was the total_vehicles example below
+    params = {
+        "path": [
+            "/total_vehicles/number",
+            "/technical_premium"
+        ]
+    }
+
+    # Call to API
+    try:
+        response = requests.get(url, params=params, auth=(user, password))
+    except requests.RequestException:
+        hx.errors.fatal("Unable to connect to Renew REST API")
+
+    # Error handling based on status code returned by API
+    if response.ok:
+        # results stored in dict : {data:{variable_name: value}}
+        result = response.json()
+        data = result["data"]
+        # USER TODO: Update dict keys(i.e. data["total_vehicles"]["number"]) to reflect the variables they are trying to extract
+        # USER TODO: Update hxd path to assign to the correct variable in the model (i.e. hxd.expiring_number_of_vehicles.calculated)
+        hxd.expiring_number_of_vehicles.calculated = data["total_vehicles"]["number"]
+        hxd.expiring_premium.calculated = data["technical_premium"]
+
+    # Raises error if status code is not 200
+    else:
+        try:
+            response_json = response.json()
+            error = f"Error: {response_json.get('title')}"
+            error += f"\nDetail: {response_json.get('detail')}" if response_json.get("detail") else ""
+            hx.errors.fatal(error)
+        except:
+            hx.errors.fatal(f"Error: {response.text}")
+```
+
+### 6. Secrets
+
+The user name and password for the API call should be added to secrets and shared with this model.
+
+### 7. Extensions for this process
+
+This approach can also be used to move data around in hx Renew for other purposes. Possible suggestions include:
+
+- Reduced re-keying on submissions created in hx Renew
+- Managing outward re-insurance pricing based on inwards business
+
+  _Note: you will need to update the query used to one that returns multiple records. This query is documented at https://api.YOURENVIRONMENT.hxrenew.com/api-docs/_
+
+- Creating package/multiline policies that rely on individual coverage pricing built as individual models in hx Renew before applying cross-coverage features and generating a single quote.

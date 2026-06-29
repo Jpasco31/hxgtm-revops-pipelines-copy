@@ -1,0 +1,139 @@
+---
+title: "The hx Renew debugger"
+---
+
+This chapter will demonstrate how to use the integrated debugger in the hx Renew IDE to optimize your debugging.
+
+<iframe
+  src="https://player.vimeo.com/video/900161694?h=f403bc7118&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+  width="560"
+  height="315"
+  frameborder="0"
+  allow="autoplay; fullscreen; picture-in-picture"
+  title="hx Renew Debugger Overview"
+></iframe>
+
+---
+
+## Objectives
+
+- Navigate the debugger in the hx Renew IDE
+- Utilize breakpoints, logpoints and conditional breakpoints for debugging
+- Use step over to skip lines of code when debugging
+- Print to the debug console
+
+---
+
+In this chapter, we will show you how to navigate the hx Renew debugger and use the three most important features, which are:
+
+- Breakpoints
+- Logpoints
+- Conditional breakpoints
+
+There are many more functionalities and we encourage you to play around with the debugger and explore.
+
+> **Fun Fact:** Our hx Renew IDE and VSCode are both based on Theia and therefore have very similar functionalities (similar ≠ same). If you are coding outside of the Renew IDE, VSCode is what our developers recommend as it is very easy to use and offers features that can significantly help you improve your code, such as the debugger. It facilitates functions like setting breakpoints, variable inspection, stepping through code, and analyzing call stacks.
+
+---
+
+## The debugging process
+
+---
+
+### Configuration:
+
+- Click on the debug icon (play-button with a bug on the activity bar).
+- Click on the dropdown menu next to the green play button. You can select **"Python: Current File"** for debugging the current file using Python.
+- Alternatively, select **"Add Configuration..."** from the dropdown. A `.json` file will open and you can manually configure your debugger in this file.
+
+---
+
+### Navigation:
+
+<img src={require("../assets/hxdebugger_ide_new.png").default} width="900" />
+
+- **File Selection**: Here you can launch and configure your debugger
+- **Menu Bar**: This menu lets you execute, pause, go back and forth in your debugging
+- **Threads**: Track all of your different debuggers that you are running, including the debugging file that you are running, for example "Model Tests".
+- **Call Stack**: Track the different files that you are debugging, for example `rating.py`.
+- **Variables**: All variables will be documented here, split into **"Local"** and **"Global"**.
+- **Watch**: If you want trace a certain variable and how it changed throughout execution, you can add it here to **"Watch"**. Simply hover over the bar and a plus sign will pop up and you can add the desired variable.
+- **Breakpoints**: Here you can manage your **"Breakpoints"**, we will elaborate on this further throughout the chapter.
+- **Debug Console**: This will provide you with any debugging output, such as logpoint messages as well as messaged returned from your debugging file, for example "**Model Tests**" returning "_pass_".
+
+---
+
+### Breakpoints:
+
+**Set a Breakpoint:**
+
+- Click left of the line to add a red dot, marking the breakpoint.
+- When running and debugging your code, it pauses at the specified breakpoint, aiding in a detailed process breakdown.
+- Multiple breakpoints can be set, each with a customizable name.
+- All set breakpoints are conveniently displayed at the bottom-left corner of your IDE.
+- You can disable breakpoints without removing them if you right-click on it. Then you are presented with options to disable the breakpoint, remove or edit it.
+- To fully remove the breakpoint, either just click on it or use the right-click and "**Remove Breakpoint**" option as shown below.
+
+<img src={require("../assets/vscode_breakpoint.gif").default} width="800" />
+
+**Set a Logpoint:**
+
+- This feature doesn't halt the run but allows you to insert informative messages.
+- Similar to setting a breakpoint, click on the left side of the line, then right-click and select "**Add Logpoint**".
+- Enter your desired message, which will be displayed in the debug console when the corresponding line of code is reached.
+
+<img src={require("../assets/vscode_logpoint.gif").default} width="800" />
+
+**Set a Conditional Breakpoint:**
+
+- Right-click on the left side of the line and choose "**Add Conditional Breakpoint**".
+- In the dropdown, choose between "Expression" and "Hit Count."
+  - _Expression_: Create a custom condition to halt the code execution. Begin the expression with if and define your Python condition.
+  - _Hit Count_: Interrupt the code execution after a specific numeric count is reached; simply enter the desired count.
+
+<img src={require("../assets/vscode_breakpoint.gif").default} width="800" />
+
+---
+
+### Step over:
+
+Sometimes it can be useful to exclude a line of code while you are debugging. This may be because you are trying to determine which specific line is at fault, or you want to run an alternative version and compare performance. The **"Step Over"** function can be very helpful in such instances. As the name suggests you are simply "stepping over" a line of code. This is how it works:
+
+- Start by setting a breakpoint on the line to be excluded.
+- Begin the debugging process by clicking the green play button (run).
+- The execution will stop at the breakpoint.
+- In the menu bar, you can now click the "Step Over" button. It is the blue, curved arrow pointing right.
+- You decide how many lines to skip by clicking "Step Over".
+- To continue the debugging, click the "Continue" button. It is the blue play button on the very left of the menu bar.
+
+<img src={require("../assets/hxdebugger_stepover.gif").default} width="900" />
+
+---
+
+### Debug console:
+
+The debug console can be used to output the values of variables or data structures, as well as to evaluate expressions. This is a good way of checking whether your code is executing as intended.
+
+- Again, start by setting a breakpoint.
+- Go into the model test file and comment out the lines that run tests on the default data:
+  - _# test_default()_
+  - _# test_run_rating_default_data()_
+- Begin the debugging process by clicking the green play button (run).
+- In the debug console, type in the desired variable and click in enter (_Hint:_ You might have to click enter twice, as the first enter sometimes just creates a paragraph).
+- For hxd items, make sure to include the `hxd.` prefix.
+
+<img src={require("../assets/hxdebugger_console.png").default} width="900" />
+
+---
+
+## hx mini quiz
+
+Test your knowledge and take our hx mini quiz!
+
+<iframe
+  src="https://aqj5uz28dk1.typeform.com/to/UbCjsx9W"
+  width="100%"
+  height="450px"
+></iframe>
+
+---

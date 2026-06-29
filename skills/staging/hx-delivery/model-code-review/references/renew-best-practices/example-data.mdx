@@ -1,0 +1,161 @@
+---
+title: "Example Data"
+---
+
+## Introduction
+
+It is best practice to create your example data first, and use it to [generate your data schema](/platform/developer/model-development-process/models/generating-a-template-data-schema).
+This way both files will be consistent with each other, rekeying (and any potential associated errors) will be avoided and example data will be available for testing.
+
+Please ensure that all of your example data sets load into your model successfully before saving, since this is required for your model build.
+
+## Variable Names
+
+It is important that your variable names are intuitive and descriptive, so it is clear what they represent to other users, ultimately making your code more readable.
+To achieve this, we recommend:
+
+- writing variable names in full i.e premium, not prem
+- Avoiding abbreviations unless they are common conventions, such as ULR
+- Do not use property names as your variables – e.g. `format`, `label`
+
+Furthermore, your variable names should be in a consistent format valid in python.
+Since python is case sensitive, we recommend defining variables in lower case to avoid any confusion as well as replacing spaces with underscores. For example, `expiring_charged_premium`.
+
+## Variable Values
+
+When providing values for variables in the example, we recommend you use realistic values, that match any test cases you may be using.
+This will make testing your model, throughout the development process, easier.
+
+For example, when using a list, it is best practice to define all the rows in your list, from your test case - not just the first row.
+To include additional rows, like a second layer, just repeat the data within the _{}_ brackets like so:
+
+```json
+    "layers": [
+      {
+        "name": "Primary 1m",
+        "limit": 1000000.0,
+        "excess": 0.0,
+        "deductible": 25000.0
+      },
+      {
+        "name": "1m xs 1m",
+        "limit": 1000000.0,
+        "excess": 1000000.0,
+        "deductible": 0
+      }
+    ]
+```
+
+Similarly, we recommend creating an example data set for each of your test cases. This can be done by repeating the example data inside the curly brackets with the correct values, all inside the outer set of square brackets.
+
+```json
+[
+  {
+    "assured": "Test Case 1",
+    "broker": "WTW",
+    "underwriter": "Morgan",
+    "policy_reference": "ABC123_19",
+    "currency": "USD",
+    "renewal_flag": true,
+    "expiring_policy_reference": "ABC123_18",
+    "expiring_charged_premium": 1800000.0,
+    "industry": "Operations",
+    "model_base_rate": 0.02,
+    "base_premium": 1000000.0,
+    "total_adjustments": 0.46,
+    "technical_premium": 500000.0
+  },
+  {
+    "assured": "Test Case 2",
+    "broker": "Aon",
+    "underwriter": "Trevor",
+    "policy_reference": "ABC222_19",
+    "currency": "GBP",
+    "renewal_flag": false,
+    "expiring_policy_reference": "ABC222_18",
+    "expiring_charged_premium": 2000000.0,
+    "industry": "Manufacturing",
+    "model_base_rate": 0.056,
+    "base_premium": 1500000.0,
+    "total_adjustments": 0.23,
+    "technical_premium": 2670000.0
+  }
+]
+```
+
+When loading your example data into your model frontend, you now be able to select which example data set you wish to load.
+
+<img
+src={require('../assets/example_data_set.png').default}
+width="240"
+/>
+
+If you want to create example data based on policies already in hx Renew, this can be down using our hx Renew's REST APIs as demonstrated [here](../renew-tips/creating-example-data#introduction).
+
+When generating your data schema from your example data, the script will infer the data type from the value provided.
+
+For example,
+
+- 180000 will be defined as `hx.Int` (integer)
+- 180000.0 will be defined as `hx.Float` (float)
+
+Therefore, we recommend adding 1 decimal place after numbers, unless you explicitly need it to be an integer i.e. a year.
+This will avoid any unintentional rounding of figures when stored in the data schema.
+
+Similarly:
+
+- "true" will be defined as a string (within quotation marks)
+- true will be defined as a bool (without quotations)
+
+If you are planning to have any dropdowns in your model, the value you provide in your example data must be a valid a option. If not, your example data will be not successfully load into your model.
+
+Lastly, any percentages should be included in your example data as decimals i.e 10% should be written as 0.1.
+Any number formatting can then be done in the data schema.
+
+## Using Structures and List
+
+We recommend taking full advantage of hx Renew's data types, including structures and lists.
+
+Any items that are related and will be displayed in tables need to be placed in structures. When creating your data structure, it is important to think ahead about how data might be linked.
+Using structures appropriately will allow you to display your data effectively as well as make it easier to extract data from your models at a later stage such as to calculate rate change or populating renewals.
+
+Similarly, any data with repeating elements should be defined as a list.
+
+## Code Formatting
+
+The following examples of code formatting are based on our in house style, which we think helps make the code more readable. Whatever format you adopt, it must be applied consistently throughout your models.
+
+### Standalone variables
+
+_Only 1 space between the colon and the example value_
+
+```json
+    "claims_basis": "Losses Occurring"
+```
+
+### Structures
+
+_Spaces after each colon, children indented inside parent structure and closing } on a final line, in line with the beginning of the variable name_
+
+```json
+    "loss_history": {
+      "value": "Good",
+      "adjustment": 0.1,
+      "comment": ""
+    }
+```
+
+### Lists
+
+_Spaces after each colon, {} on new lines indented in, children indented in again, closing brackets on own line_
+
+```json
+"layers": [
+      {
+        "name": "Primary 1m",
+        "limit": 1000000.0,
+        "excess": 0.0,
+        "deductible": 25000.0
+      }
+    ]
+```

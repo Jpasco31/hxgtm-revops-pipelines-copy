@@ -1,0 +1,84 @@
+---
+title: "Data Schema"
+---
+
+## Introduction
+
+Lots of the best practices covered in the [example data section](example-data) apply to your data schema as well, such as variable names. If you generate your data schema from your example data, after following our best practices, you will inherit them automatically!
+
+Here we focus on an additional practices to consider specifically in your data schema.
+
+## General Points
+
+Make sure your data schema does not contain any unused variables or any temporary variables that do not need to be stored.
+This will help keep your data schema manageable and also help when extracting data out of your models at a later stage.
+
+As with any python files in hx Renew, correct indentation is mandatory for the code to compile correctly. Indenting your data schema correctly will also help make it more readable. For example, indenting any nested variables inside lists or structures will help users quickly see what pathing would be required to access them.
+
+Consistent formatting of your data schema code will also help with readability.
+Our in house style is:
+
+- 1 space after the colon
+- 1 space after commas separating properties
+- No spaces around "="
+
+For example,
+
+```python
+"comment": hx.Str(mode="input", default="", view={"label": "Comment"}),
+```
+
+## Abstracting the data schema
+
+We recommend abstracting your data schema if possible, using functions.
+For example, when generating repeating structures.
+
+If functions are implemented in the data schema, ensure they are at the top of your data schema file, above the `data_schema()` function.
+As with any functions, make sure you add some commentary around functionality.
+
+Abstracting the data schema will avoid any rekeying, keep formats consistent and can help prevent your data schema becoming overly long.
+
+The data schema can also be split across additional python files and imported into the main data schema file. This can help manage the length of your data schema and segmenting the data can help it easier to find related variables.
+
+Details on how to abstract your data schema can be found [here](../renew-tips/data-schema/abstracting-the-data-schema).
+
+## Properties
+
+In your data schema, it is best practice to have your data schema properties (i.e mode, defaults) in a consistent order. This will make it easier to find and edit any properties as required.
+
+Also do not have any used properties in your data schema, such as async inputs that are not being used in tasks or options not being displayed.
+
+**Labels**
+
+- Have clear and descriptive labels
+- Use new lines `\n` within labels to avoid making columns too wide. For example:
+
+  ```python
+  "label": "Calculated\nPremium"
+  ```
+
+This creates a label that looks like:
+<img
+src={require('../assets/newlines.png').default}
+width="240"
+/>
+
+- If labels are overly lengthy, consider using the [info property](/platform/developer/building-your-model/define-your-data/view-properties#info) to display the information instead.
+
+**Defaults**
+
+We recommend setting your defaults to values that will require the underwriter to change during pricing in order to calculate a premium correctly.
+
+For example, if you set your default sum insured value as a million, an underwriter may miss this field when inputting their data and mistake it for a genuine value. We would recommend setting the default as 0 instead, in this case.
+
+**Options**
+For options, we recommend ending the variable name in `_option` i.e
+
+```python
+    "options": {
+        "summary_option": {
+            "label": "Summary Page Label",
+            "info": "Summary Page Tooltip Label"
+        }
+    }
+```

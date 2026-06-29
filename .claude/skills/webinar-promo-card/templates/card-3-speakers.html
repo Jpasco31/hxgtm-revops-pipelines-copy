@@ -1,0 +1,308 @@
+<!--
+  webinar-promo-card scaffold — 3 speakers
+  Single-column layout inside 60px padding. Upper region distributes the logo
+  (top) and the meta/headline/subtitle stack (bottom) via space-between; a 40px
+  gap below it anchors a horizontal row of three fixed 150px tiles, left-aligned
+  with 20px gaps (the row ends short of the right edge).
+  Reference render:
+    skills/design-system/assets/reference-renders/Social Media Webinar Promo - 3 Speakers.png
+  Placeholders:
+    {{FONT_FACE_BLOCK}}           — paste contents of
+                                    skills/design-system/tokens/fonts-inline-card.css
+                                    (Acid Grotesk Light/Book/Medium + JetBrains Mono)
+    {{LOGO_SVG}}                  — paste contents of
+                                    skills/design-system/assets/logo/hx-wordmark.svg
+    {{GRADIENT_IMG_PATH}}         — absolute path to PNG in
+                                    skills/webinar-promo-card/assets/
+                                    (Burgundy 01.png | Dark blue 01.png | Deep Forest 01.png)
+    {{HEADLINE}}                  — sentence-case, <=8 words ideally
+    {{SUBTITLE}}                  — optional one-line descriptor
+                                    (or remove the .subtitle node entirely)
+    {{META}}                      — e.g. March 26, 2026, 11am EST / 4pm GMT
+    {{SPEAKER_N_NAME}}            — full name (N = 1, 2, 3)
+    {{SPEAKER_N_ROLE}}            — Title, Company
+    {{SPEAKER_N_PHOTO_NODE}}      — <img src="headshots/...png" alt=""> OR empty string
+    {{GRADIENT_BASE}}             — #3F0A20 / #1C2733 / #002625
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Webinar promo card — {{HEADLINE}}</title>
+<style>
+  {{FONT_FACE_BLOCK}}
+
+  :root {
+    --font: 'FFF Acid Grotesk', Arial, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --gradient-base: {{GRADIENT_BASE}};
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0a;
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    box-sizing: border-box;
+  }
+
+  .card {
+    position: relative;
+    width: 1200px;
+    height: 627px;
+    overflow: hidden;
+    border-radius: 4px;
+    color: #fff;
+    isolation: isolate;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .bg-base {
+    position: absolute; inset: 0;
+    z-index: 0;
+    background: var(--gradient-base);
+  }
+  .bg-base .gradient-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .bg-grain {
+    position: absolute; inset: 0;
+    opacity: 0.18;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    z-index: 1;
+  }
+
+  .bg-vignette {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.30) 100%);
+    z-index: 2;
+  }
+
+  .content {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    padding: 60px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* Upper region grows to fill the space above the speaker row and distributes
+     its two children — logo (top) and the title stack (bottom) — via
+     space-between. This replaces the old `.meta { margin-top }` trick: the
+     logo-to-text gap is whatever vertical slack remains after the fixed-height
+     title stack and 150px speaker row are placed. */
+  .top-region {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .logo {
+    color: #FFFFFF;
+  }
+  .logo svg {
+    height: 30px;
+    width: auto;
+    display: block;
+  }
+
+  /* Title-stack gap: line-height 1.1 adds ~10px of leading on top of this flex
+     gap, so 12px renders as a ~20px ink-to-ink gap for meta->headline and
+     headline->subtitle (matches the brand reference comp). Do not "restore" to
+     ~20px. */
+  .text {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .meta {
+    color: #C6C7C8;
+    font-family: var(--mono);
+    font-weight: 300;
+    font-size: 20px;
+    font-style: normal;
+    line-height: 1.1;
+    letter-spacing: 0;
+    margin: 0;
+  }
+
+  h1.headline {
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 64px;
+    font-style: normal;
+    line-height: 1.1;
+    margin: 0;
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 36px;
+    font-style: normal;
+    line-height: 1.1;
+    color: #C6C7C8;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .speakers {
+    flex: 0 0 150px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 20px;
+  }
+
+  /* Fixed 256px blocks (150px tile + 12px gap + 94px label), left-aligned: no
+     flex:1 distribution, so three blocks pack to the left with a 20px gap and
+     the row ends ~272px short of the right edge — matching the Figma spec. The
+     fixed 94px label keeps block width independent of role length; long roles
+     wrap upward (bottom-aligned) within the column rather than stretching the
+     row. */
+  .speaker {
+    flex: 0 0 256px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 12px;
+  }
+
+  .portrait {
+    flex: 0 0 150px;
+    width: 150px;
+    height: 150px;
+    border-radius: 8.5px;
+    overflow: hidden;
+    background: var(--gradient-base);
+    position: relative;
+  }
+  .portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .speaker-info {
+    flex: 0 0 94px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .speaker-info .name {
+    font-family: var(--font);
+    font-weight: 350;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 1.2;
+    color: #fff;
+    margin: 0;
+  }
+  .speaker-info .role {
+    font-family: var(--font);
+    font-weight: 350;
+    font-size: 20px;
+    line-height: 1.2;
+    color: #C6C7C8;
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="bg-base"><img class="gradient-img" src="{{GRADIENT_IMG_PATH}}" aria-hidden="true"></div>
+    <div class="bg-grain"></div>
+    <div class="bg-vignette"></div>
+
+    <div class="content">
+      <div class="top-region">
+        <div class="logo">{{LOGO_SVG}}</div>
+        <div class="text">
+          <div class="meta">{{META}}</div>
+          <h1 class="headline">{{HEADLINE}}</h1>
+          <p class="subtitle">{{SUBTITLE}}</p>
+        </div>
+      </div>
+
+      <div class="speakers">
+        <div class="speaker">
+          <div class="portrait">{{SPEAKER_1_PHOTO_NODE}}</div>
+          <div class="speaker-info">
+            <p class="name">{{SPEAKER_1_NAME}}</p>
+            <p class="role">{{SPEAKER_1_ROLE}}</p>
+          </div>
+        </div>
+
+        <div class="speaker">
+          <div class="portrait">{{SPEAKER_2_PHOTO_NODE}}</div>
+          <div class="speaker-info">
+            <p class="name">{{SPEAKER_2_NAME}}</p>
+            <p class="role">{{SPEAKER_2_ROLE}}</p>
+          </div>
+        </div>
+
+        <div class="speaker">
+          <div class="portrait">{{SPEAKER_3_PHOTO_NODE}}</div>
+          <div class="speaker-info">
+            <p class="name">{{SPEAKER_3_NAME}}</p>
+            <p class="role">{{SPEAKER_3_ROLE}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function autofit() {
+      const fit = (el, min, max, step, maxLines) => {
+        if (!el) return;
+        let size = max;
+        el.style.fontSize = size + 'px';
+        const lineHeight = () => parseFloat(getComputedStyle(el).lineHeight);
+        while (
+          (el.scrollWidth > el.clientWidth ||
+            Math.round(el.scrollHeight / lineHeight()) > maxLines) &&
+          size > min
+        ) {
+          size -= step;
+          el.style.fontSize = size + 'px';
+        }
+      };
+      const run = () => {
+        fit(document.querySelector('h1.headline'), 40, 64, 2, 2);
+        fit(document.querySelector('.subtitle'), 22, 36, 1, 2);
+      };
+      // Script sits at end of body, so DOM is parsed. Run immediately,
+      // then re-run after web fonts load so width measurements use the
+      // final font metrics (and complete before puppeteer's
+      // `document.fonts.ready` await resolves).
+      run();
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(run);
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+---
+title: "Testing Your Model"
+---
+
+## Model Tests
+
+When you are developing and testing your model, it can be helpful to run your Rating Algorithm or Async Tasks directly from the code editor, so that you can see any console output, and to step through your code using the debugger.
+
+## Running Tests
+
+The 'Model Tests' tool will run a number of tests which you can run on your model code:
+
+- Reading in your Data Schema to test it is valid
+- Loading the default values from your Data Schema
+- Loading the example values from your Example Data
+- Running the Rating Algorithm on the default values from your Data Schema
+- Running the Rating Algorithm on the example values from your Example Data
+
+To run the tests:
+
+1. Follow the steps in [Running Model Tools](/platform/developer/model-development-process/models/running-model-tools), and run the tool named "Model Tests"
+
+2. The results of these tests will be shown in the Debug Console
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/model_tests.png").default}
+  width="1000"
+/>
+
+## Debugging Your Code
+
+If you get errors when you run your code, it can be helpful to step through the code using the debugger to see exactly what is going wrong.
+
+To set a break point in your code, click in the left hand gutter of the code editor on the line where you wish your code to break. This will insert a red circle in the gutter, indicating that a breakpoint has been set on this line.
+
+<img
+src={require('../../assets/ModelDevelopmentProcess/Models/tools-modelTestsBreakPoint.png').default}
+width="400"
+alt="Models tests breakpoint"
+/>
+
+After setting a breakpoint, when you run the Model Tests, your code will pause when it reaches a break point.
+
+## Testing Async Tasks
+
+The tests run by the Model Tests tool are defined inside the `tools/model_tests.py` file.
+
+<img
+  src={require("../../assets/ModelDevelopmentProcess/Models/model_tests.png").default}
+  width="1000"
+/>
+
+You can edit this file in order to test your Async Tasks. To do this, uncomment the line:
+
+```python
+# test_running_async_task("my_async_task")
+```
+
+and replace `my_async_task` with your Async Task name (in this example, `"fetch_inflation"`)
+
+```python
+test_running_async_task("fetch_inflation")
+```
+
+### Testing Your File Uploads During Async Tasks
+
+Using a similar workflow to that defined in the [Running Model Tools](/platform/developer/model-development-process/models/running-model-tools) section,
+testing file uploads can be run by the Model Tests tool defined in the `tools/model_tests.py` file.
+
+1. Firstly, navigate to the `tools/files/` directory. Right click on the directory and select the `Upload Files...` button
+2. Select the files you wish to upload to the directory for testing and upload them.
+3. In the `tools/model_tests.py` file, uncomment the final line of the file:
+
+```python
+# test_running_async_task("my_async_task")
+```
+
+4. Create a dictionary containing the hxd path as the keys and filepath relative to the `tools/files` directory of the files as the values. Following the example defined in the schema above:
+
+```python
+example_files = {
+    "/input_file": "example_file.csv"
+}
+```
+
+5. Finally, pass this dictionary structure to the `test_running_async_task("my_async_task")` function using the `files` keyword argument as follows:
+
+```python
+test_running_async_task("my_async_task", files=example_files)
+```
+
+6. The output files of the async task are written to a directory with path `tools/files/{async_task_name}`, using the name given to the async task.

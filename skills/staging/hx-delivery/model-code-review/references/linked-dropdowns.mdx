@@ -1,0 +1,298 @@
+---
+title: "Linked dropdowns"
+---
+
+In the spreadsheet model there is an updated **'Exposure Details'** table in the **base premium** section.
+
+When a **'Detailed Industry'** is selected (Column D), the **'Industry'** must change to match.
+
+<img
+  src={require("../assets/spreadsheet_linked_dropdown.png").default}
+  width="800"
+/>
+
+In hx Renew, a linked dropdown can be created to replicate this behavior based on a new parameter table that is supplied in the .zip found on the [introduction](introduction) page.
+
+Linked dropdowns are very useful for large datasets where you may need to filter on one column to select the correct entry (e.g. Industry -> Category -> Detailed Trade or Continent -> Country -> Region etc.)
+
+---
+
+## :floppy_disk: Model Files
+
+| The model files required for this chapter can be downloaded [here](../assets/day_2_linked_dropdowns.zip). |
+| --------------------------------------------------------------------------------------------------------- |
+
+---
+
+## Objectives
+
+- Read the `industry_trade` parameter table into a new input list in the data schema
+- Create both flat and hierarchical linked dropdowns
+- Create a new table in the view to display the linked fields
+- Update the rating algorithm to calculate the exposure and premium for the industry that has been selected
+
+---
+
+## Flat vs hierarchical dropdowns
+
+Full documentation on how to add linked dropdowns to the data schema can be found [here](/platform/developer/building-your-model/define-your-data/data-schema#linked-dropdowns).
+
+In particular, hx Renew offers two types of linked dropdowns - "flat" and "hierarchical". The default option is "flat".
+
+Here is an example of a flat linked dropdown:
+
+<img src={require("../assets/flat_linked_dropdown.gif").default} width="800" />
+
+In contrast to a hierarchical dropdown:
+
+<img
+  src={require("../assets/hierarchical_linked_dropdown.gif").default}
+  width="800"
+/>
+
+---
+
+## Updating the parameter table
+
+Currently, the model contains a parameter table called **'industry'** which contains a list of industries and their corresponding base rates. This needs to be replaced with a new table called `industry_trade`, which contains the fields required for the linked dropdown.
+
+**Download the industry_trade.csv [here](../assets/industry_trade.csv)**
+
+> **Note:** Remember to update the `parameter_tables_schema.json` file to reflect the changes above.
+
+For more information about parameter tables, please see the [Developer Documentation](/platform/developer/building-your-model/algorithms/parameter-tables#defining-parameter-tablesx).
+
+---
+
+## Updating the data schema - flat dropdown
+
+The next step is to update the data schema by creating a structure to store the contents of the linked dropdown. Initially this will be a flat dropdown, later this will be modified to be a hierarchical dropdown.
+
+1. In the data schema, delete the `industry` node and in its place create a new **input list** called `industries`.
+2. Inside the industries list create a new **structure** called `industry_trade` with the following props `linked_options_table = "industry_trade`, `linked_options_columns =["industry", "trade"]`, `linked_default_index = 0`.
+
+   This will allow the new parameter table to be read into the model.
+
+3. Add two **input string** nodes within `industry_trade`, these should be called `industry` and `trade` and should have appropriate labels.
+4. Next, create four additional nodes within `industries`, but outside of the `industry_trade` structure. These should be: `allocation`, `base_rate`, `exposure` and `premium`. Format the nodes appropriately based on the spreadsheet model:
+
+<img src={require("../assets/linked_dropdown_nodes.png").default} width="800" />
+
+5. Finally, outside of `industries` list create another new structure called `industry_totals`, containing a node called `allocation` which will be used to **output** the total allocation.
+
+To view the code for the updates to the data schema, expand the pane below.
+
+<details>
+<summary>Data schema solution - flat linked dropdown</summary>
+
+```python
+  "industries": hx.List(mode="input", children={
+            "industry_trade" : hx.Structure(linked_options_table="industry_trade", linked_options_columns=["industry", "trade"], linked_default_index=0, children={
+                "industry": hx.Str(mode="input", view={"label":"Industry"}),
+                "trade": hx.Str(mode="input", view={"label": "Trade"}),
+            }),
+            "allocation": hx.Float(mode="input", default=0, view={"label": "Allocation", "format": {"output" : "percent", "mantissa":1}}),
+            "base_rate": hx.Float(mode="override", view={"label": "Base Rate", "format": {"output" : "percent", "mantissa":2}}),
+            "exposure": hx.Float(mode="output", view={"label": "Exposure", "format": {"thousandSeparated":True, "mantissa":0}}),
+            "premium": hx.Float(mode="output", view={"label": "Premium", "format": {"thousandSeparated":True, "mantissa":0}}),
+        }),
+  "industry_totals": hx.Structure(children={
+            "allocation": hx.Float(mode="output", view={"label": "Allocation", "format":{"output":"percent", "mantissa":2}}),
+    }),
+
+```
+
+</details>
+
+---
+
+## Updating example data
+
+Now that the data schema has been amended, the example data also needs to be updated. Add an `industries` list containing data from the `industry_trade` parameter table, in the following format:
+
+```jsx
+"industries": [
+      {
+        "allocation": 0.02,
+        "industry_trade": {
+          "industry": "Distribution",
+          "trade": "Ship"
+        }
+      },
+      ]
+```
+
+Remember to delete **industry** from the example data.
+
+<details>
+  <summary>View example data solution</summary>
+
+```jsx
+"industries": [
+      {
+        "allocation": 0.02,
+        "industry_trade": {
+          "industry": "Distribution",
+          "trade": "Ship"
+        }
+      },
+      {
+        "allocation": 0.16,
+        "industry_trade": {
+          "industry": "Manufacturing",
+          "trade": "Factory"
+        }
+      },
+      {
+        "allocation": 0.06,
+        "industry_trade": {
+          "industry": "Operations",
+          "trade": "Delivery"
+        }
+      }
+]
+```
+
+</details>
+
+---
+
+## Updating the view
+
+Next, a table needs to be created in the view to display the linked dropdown.
+
+1. In the view remove the `Base Premium` collection and replace it with a new **table** with the title **"Industry List"**.
+2. The table should contain `industries` and `industry_totals` as data, and `industry_name`, `trade`, `allocation`, `base_rate`, `exposure`, and `premium` as fields.
+
+> **Note**:
+>
+> - Pathing should be used when accessing `industry_name` and `trade` as they are the variables contained within the linked dropdown structure. E.g. `"industry_trade/industry"`.
+> - To read more about pathing [click here](/platform/developer/building-your-model/interface/ui-components/pathing)
+
+<details>
+  <summary>Click to view the solution</summary>
+
+```jsx
+<HX.Table
+  title="Industry List"
+  data={["industries", null, "industry_totals"]}
+  fields={[
+    "industry_trade/industry",
+    "industry_trade/trade",
+    "allocation",
+    "base_rate",
+    "exposure",
+    "premium",
+  ]}
+/>
+```
+
+</details>
+
+---
+
+## Updating the rating algorithm
+
+It is now time to update `rating.py`.
+
+1. The first change to be made is to ensure that the algorithm is reading `industry_trade` rather than `industry`.
+
+2. Next, the algorithm will needs to loop through the industries list and lookup the model base rate using the both the industry and trade fields.
+
+The general syntax for this is below:
+
+`param_table[(param_table["col_1"] == val_1) & (param_table["col_2"] == val_2)]["col_3"].iloc[0]`
+
+> **Hints:**
+>
+> - The bounds for the loop should be **`for industry in hxd.industries:`**
+> - Inside the loop three things should happen:
+>   - `industry.base_rate.calculated` should set to the base rate of the industry that has been selected.
+>   - `industry.exposure` needs to be calculated (exposure \* allocation)
+>   - `industry.premium` should also be calculated (exposure \* base rate)
+
+3. Outside the loop, the allocation total needs to be calculated, this is done using the following code:
+
+```python
+ hxd.industry_totals.allocation = sum([industry.allocation for industry in hxd.industries if industry.allocation is not None])
+```
+
+4. Add a validation error `(hx.errors.validation)` to ensure the allocations sum to 1. Numpy will need to be imported at the top of the code.
+
+> **Note:** for further information on error handling, please see the [Developer Documentation](/platform/developer/building-your-model/algorithms/error-handling#validation-errors)
+
+5. Update the base premium calculation to be:
+
+```python
+ hxd.base_premium = sum([industry.premium for industry in hxd.industries if industry.premium is not None])
+```
+
+6. Finally, update any other references to the old model base rate. There are references in the rating algorithm and the example data.
+
+> **Hint:** The code in step 3 will help when calculating the base premium.
+
+Check your code against the solution below.
+
+<details>
+
+<summary>Rating algorithm solution</summary>
+
+```python
+    import math
+
+    # 1 Read industry_trade
+    industry_trade_table = hx.params.industry_trade
+
+    # 2 Loop to find base rate by industry
+    for industry in hxd.industries:
+        industry.base_rate.calculated = industry_trade_table[(industry_trade_table["industry"] == industry.industry_trade.industry) & (industry_trade_table["trade"] == industry.industry_trade.trade)]["rate"].iloc[0]
+        industry.exposure = hxd.exposure.value * industry.allocation
+        industry.premium = industry.exposure * industry.base_rate.selected
+
+    # 3 Setting allocation total
+    hxd.industry_totals.allocation = sum([industry.allocation for industry in hxd.industries if industry.allocation is not None])
+
+    # 4 Add a validation error to ensure the allocations sum to 1
+    if not math.isclose(hxd.industry_totals.allocation, 1, rel_tol=0.001):
+            hx.errors.validation("Industry allocations must sum to 1")
+
+    # 5 Base premium calculations
+    hxd.base_premium = sum([industry.premium for industry in hxd.industries if industry.premium is not None])
+    #hxd.base_premium = hxd.exposure.value * hxd.model_base_rate.selected
+```
+
+</details>
+
+---
+
+## Hierarchical linked dropdown
+
+In order to convert the dropdown to be hierarchical opposed to flat a change needs to be made to the data schema. A **view** argument can be added to the `industry_trade` structure with the `linked_options_selector` property set to `hierarchical`.
+
+```python
+ "industries": hx.List(mode="input", children={
+            "industry_trade": hx.Structure(view={"linked_options_selector": "hierarchical"}, linked_options_table="industry_trade", linked_options_columns=["industry", "trade"], linked_default_index=0, children={
+                "industry_name": hx.Str(mode="input", view={"label": "Industry"}),
+                "trade": hx.Str(mode="input", view={"label": "Trade"}),
+            }),
+             "allocation": hx.Float(mode="input", default=0, view={"label": "Allocation", "format": {"output": "percent", "mantissa": 1}}),
+    })
+```
+
+---
+
+## Feedback
+
+We would really appreciate any feedback that you have about this chapter. All feedback is anonymous, however if you would like us to contact you, please include your e-mail address.
+
+<iframe
+  src="https://aqj5uz28dk1.typeform.com/to/aLoF01iM"
+  width="100%"
+  height="450px"
+></iframe>
+
+---
+
+## Next steps
+
+In this chapter you have learned how to create both flat and hierarchical linked dropdowns. The next chapter will further enhance this by introducing dynamic dropdowns.

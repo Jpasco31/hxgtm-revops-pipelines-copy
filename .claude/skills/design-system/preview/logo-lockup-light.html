@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Logo lockup — light</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: #FFFFFF;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 56px 72px;
+    box-sizing: border-box;
+    gap: 48px;
+  }
+  header { display: flex; justify-content: space-between; align-items: baseline; }
+  .label { font: 500 11px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-60, #4A5566); }
+  .meta  { font: 400 11px/1.5 var(--font-mono); color: var(--color-ink-40, #848D9A); }
+
+  .stage {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-content: center;
+  }
+  .lockup-row {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    padding: 56px 64px;
+    border: 1px dashed rgba(138, 56, 245, 0.45);
+    border-radius: 6px;
+    background: #FFFFFF;
+  }
+  .lockup-row.on-ink { background: var(--color-ink, #111923); }
+  .lockup-row .mark { display: flex; align-items: center; }
+  .lockup-row .mark svg { display: block; height: 88px; width: auto; }
+  .lockup-row .word { display: flex; align-items: center; }
+  .lockup-row .word svg { display: block; height: 64px; width: auto; }
+  .row-tag {
+    margin-left: auto;
+    font: 500 10px/1 var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-40, #848D9A);
+  }
+  .lockup-row.on-ink .row-tag { color: rgba(255,255,255,0.6); }
+
+  /* Light theme: ink mark, accent (right "h") in indigo */
+  .light .mark      { color: var(--color-ink, #111923); --logomark-accent: var(--color-indigo-500, #5B5BD6); }
+  .light .word      { color: var(--color-ink, #111923); }
+
+  /* On-ink variant: white mark, accent in lime */
+  .on-ink .mark     { color: #FFFFFF; --logomark-accent: var(--color-lime-400, #C6F23F); }
+  .on-ink .word     { color: #FFFFFF; }
+
+  footer { display: flex; justify-content: space-between; align-items: baseline; }
+  footer .meta + .meta { text-align: right; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="label">Logo lockup · light theme</div>
+    <div class="meta">hyperexponential — Brand v0.1</div>
+  </header>
+
+  <section class="stage">
+    <div class="lockup-row light">
+      <div class="mark"><img src="../assets/logo/hx-logomark.svg" style="height:88px;width:auto;display:block" alt=""></div>
+      <div class="word"><img src="../assets/logo/hx-wordmark.svg" style="height:64px;width:auto;display:block" alt=""></div>
+      <div class="row-tag">Primary · ink on white</div>
+    </div>
+
+    <div class="lockup-row on-ink">
+      <div class="mark"><img src="../assets/logo/hx-logomark.svg" style="height:88px;width:auto;display:block;filter:invert(100%)" alt=""></div>
+      <div class="word"><img src="../assets/logo/hx-wordmark.svg" style="height:64px;width:auto;display:block;filter:invert(100%)" alt=""></div>
+      <div class="row-tag">Reverse · white on ink</div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="meta">Logomark uses currentColor + --logomark-accent for the right "h"</div>
+    <div class="meta">Wordmark inherits currentColor</div>
+  </footer>
+</body>
+</html>

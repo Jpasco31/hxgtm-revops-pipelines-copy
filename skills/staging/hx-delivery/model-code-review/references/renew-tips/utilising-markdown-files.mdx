@@ -1,0 +1,96 @@
+---
+title: "Utilising Markdown Files in hx Renew"
+---
+
+## Introduction
+
+Best practice model design requires not just that pricing approaches are consistent and appropriate for the business
+but also that users are clear on the correct steps to follow and what assumptions have been used in the model so that they
+can clearly understand where they should be applying expert judgement.
+
+This will often mean adding labels and instructions within the model itself as well as linking out to supporting materials.
+There are also occasions where one may create a cover sheet to provide a clear description of the model.
+
+![](../assets/markdown_preview_4.png)
+
+hx Renew allows developers to surface markdown formatted text in a Notes component to assist underwriters when using the models.
+Typically, developers would insert the markdown text in a `Str` node within the `data_schema`. However, this can become challenging when
+dealing with longer text and different types of formatting within a single `Str` node as shown below.
+
+![](../assets/markdown_data_schema_snippet.png)
+
+This article will demonstrate an alternative approach on how it can be easily achieved using an external markdown file editor
+and importing it into hx Renew.
+
+You can download the files that were used in this article [here](../assets/markdown_files_model.zip).
+
+## Setup
+
+### Creating and Editing Markdown Files
+
+There are various tools that you can use to create and edit Markdown files, such as Atom and Notepad++. In this article, we will
+be using Visual Studio Code as it is an open-source editor that also supports live preview, integrated Git support and a variety
+of Markdown extensions.
+
+![](../assets/markdown_preview_1.png)
+
+Once you have created/opened a Markdown file in Visual Studio Code, you will be able to live preview the text formatting by
+right-clicking the file and selecting "Open Preview" as shown above.
+
+![](../assets/markdown_preview_2.png)
+
+**Note**: Inside the numbered list inside the image above, there are some words surrounded by asterisks, e.g. "\*\*Treaty Details\*\*"", which
+were not displayed properly as a bold word. This is a reported bug found within the software but it will not be the case once imported inside
+of hx Renew.
+
+### Data schema
+
+![](../assets/import_markdown.png)
+
+To utilise a markdown file inside hx Renew, you will have to import the file into the `data_schema` folder, implement a helper function, and appropriately
+path the file into the data schema. The helper function will retrieve the contents of a markdown file and assign it to the respective Str node. Apart
+from that, the data schema can be written as usual.
+
+#### Example Data Schema
+
+```python
+import hx_data_schema as hx
+import os
+
+# Add markdown file path into directory
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+cover_sheet_file_path = os.path.join(SCRIPT_DIR, "cover_sheet_note.md")
+
+def get_markdown_contents(file_path):
+    '''
+    Open and retrieve the text contents from the given file.
+    Any files from the data schema file can be used.
+    '''
+    try:
+        with open(file_path, "r") as f:
+            markdown_string = f.read()
+    except:
+        markdown_string = "Failed to read file"
+
+    return markdown_string
+
+
+@hx.data_schema
+def data_schema():
+    return hx.Structure(
+        children={
+            # This Str node is using the markdown file contents
+            "cover_note": hx.Str(mode="input", default=get_markdown_contents(cover_sheet_file_path), view={"options": {"read_only": {"read_only": True}}})
+        }
+    )
+```
+
+### Example View
+
+```python
+<HX.Section title="Cover Sheet">
+    <HX.Notes field="cover_note.read_only" />
+</HX.Section>
+```
+
+![](../assets/markdown_preview_3.png)
